@@ -1,177 +1,102 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Auditoria 5S J2M - v1.2025 Enterprise</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-<style>
-:root { --primary: #f06639; --secondary: #5d5a51; --green: #28a745; --blue: #007bff; }
-*{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
-
-body { 
-    margin:0; min-height: 100vh; background-color: #f0f2f5;
-    background-size: cover; background-position: center; background-attachment: fixed;
-    transition: background-image 1.5s ease-in-out; position: relative;
-}
-body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: -1; }
-
-header { background: var(--secondary); padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); color: white; font-weight: bold; font-size: 22px; }
-.screen { display:none; padding:20px; max-width: 1150px; margin: 10px auto; }
-.active { display:block; animation: fadeIn 0.4s; }
-
-.filter-bar { display: flex; gap: 10px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; border: 1px solid #ddd; }
-.kpi-card { background: var(--secondary); color: white; padding: 20px; border-radius: 8px; flex: 1; min-width: 200px; text-align: center; border-bottom: 5px solid var(--primary); }
-.card { background: rgba(255,255,255,0.95); padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
-
-button { border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; }
-.btn-primary { background: var(--primary); }
-.btn-secondary { background: var(--secondary); }
-.btn-danger { background: #dc3545; font-size: 10px; padding: 5px 10px; }
-
-select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; background: white; margin-bottom: 10px; }
-.tabela-pdf { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-.tabela-pdf th, .tabela-pdf td { border: 1px solid #999; padding: 8px; text-align: left; font-size: 13px; }
-
-.foto-preview { max-width: 150px; margin-top: 5px; border-radius: 4px; border: 1px solid #ddd; display: block; }
-
-@media print { .no-print { display:none !important; } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria 5S J2M - v1.2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #f06639; --secondary: #5d5a51; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f4f4; }
+        header { background: var(--secondary); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--primary); font-weight: bold; font-size: 20px; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); }
+        h2 { color: var(--secondary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .pergunta-bloco { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
+        select, textarea, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        button { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
+        button:hover { background: #d9532d; }
+        .foto-preview { margin-top: 10px; max-width: 100%; border-radius: 4px; }
+    </style>
 </head>
-<body id="bgBody">
+<body>
 
 <header>AUDITORIA 5S J2M - v1.2025</header>
 
-<div id="home" class="screen active">
-    <div class="card">
-        <h3>Identificação da Auditoria</h3>
-        <label>Setor:</label>
-        <select id="setor">
-            <option value="ADM FILIAL">ADM FILIAL</option>
-            <option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
-            <option value="ENG. SOLVE">ENG. SOLVE</option>
-            <option value="INJEÇÃO">INJEÇÃO</option>
-            <option value="LOGISTICA FILIAL">LOGISTICA FILIAL</option>
-            <option value="LOGISTICA MATRIZ">LOGISTICA MATRIZ</option>
-            <option value="MANUTENÇÃO">MANUTENÇÃO</option>
-            <option value="MATRIZARIA">MATRIZARIA</option>
-            <option value="MONTAGEM">MONTAGEM</option>
-            <option value="PPCP">PPCP</option>
-            <option value="QUALIDADE">QUALIDADE</option>
-            <option value="SALA ELETRONICOS">SALA ELETRONICOS</option>
-            <option value="SALA IMPETUS">SALA IMPETUS</option>
-        </select>
-        <label>Auditor:</label><input type="text" id="auditor">
-        <label>Data:</label><input type="date" id="data">
-        <br>
-        <button class="btn-primary" onclick="start()">Iniciar Avaliação</button>
-        <button class="btn-secondary" onclick="openDashboard()">Dashboard</button>
+<div id="app" class="container">
     </div>
-</div>
-
-<div id="senso" class="screen"></div>
-
-<div id="dashboard" class="screen">
-    <div class="no-print">
-        <div class="filter-bar">
-            <select id="fSetor" onchange="renderRelatorio()"></select>
-            <select id="fMes" onchange="renderRelatorio()">
-                <option value="GERAL">Todos os Meses</option>
-                <option value="0">Janeiro</option><option value="1">Fevereiro</option>
-            </select>
-            <button class="btn-secondary" onclick="show('home')">Novo</button>
-            <button style="background:#10b981" onclick="window.print()">PDF</button>
-        </div>
-    </div>
-    <div class="filter-bar">
-        <div class="kpi-card"><h2 id="mediaGeralFabrica">0.0</h2><p>Média Fábrica</p></div>
-        <div class="kpi-card"><h2 id="totalAuditorias">0</h2><p>Total Auditorias</p></div>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
-        <canvas id="cRadar"></canvas>
-        <canvas id="cBarra"></canvas>
-    </div>
-    <div id="relatorioView"></div>
-</div>
 
 <script>
-Chart.register(ChartDataLabels);
-let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-let audit = {}, sensoIndex = 0;
-const sensos = ["Utilização", "Organização", "Limpeza", "Padronização", "Disciplina"];
+    const setores = ["ADM FILIAL", "CONFORMAÇÃO", "ENG. SOLVE", "INJEÇÃO", "LOGISTICA FILIAL", "LOGISTICA MATRIZ", "MANUTENÇÃO", "MATRIZARIA", "MONTAGEM", "PPCP", "QUALIDADE", "SALA ELETRONICOS", "SALA IMPETUS"];
 
-// Lógica de Troca de Fundo (Usinagem, Injeção, Agro)
-const imagensFundo = [
-    "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1200", 
-    "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1200",
-    "https://images.unsplash.com/photo-1565608438257-fac3c27beb36?w=1200"
-];
-let imgIdx = 0;
-setInterval(() => {
-    document.body.style.backgroundImage = `url('${imagensFundo[imgIdx]}')`;
-    imgIdx = (imgIdx + 1) % imagensFundo.length;
-}, 10000);
+    const checklist = [
+        { senso: "SEIRI - UTILIZAÇÃO", perguntas: [
+            "Existem itens desnecessários (ferramentas, papéis, peças) na área?",
+            "Há estoque excessivo ou materiais obsoletos no setor?",
+            "Os quadros de avisos e documentos estão atualizados?",
+            "As ferramentas de uso constante estão acessíveis?",
+            "O descarte de itens inúteis é feito corretamente?"
+        ]},
+        { senso: "SEITON - ORGANIZAÇÃO", perguntas: [
+            "As ferramentas e materiais possuem local fixo e identificado?",
+            "O piso possui demarcação de corredores e áreas de estoque?",
+            "É fácil localizar qualquer item em menos de 30 segundos?",
+            "Armários e gavetas estão organizados internamente?",
+            "Os equipamentos estão posicionados para facilitar o fluxo?"
+        ]}
+        // Adicione os outros 3 sensos aqui seguindo o mesmo padrão
+    ];
 
-function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+    let currentStep = 0;
+    let auditoriaData = { setor: "", auditor: "", data: "", respostas: [] };
 
-function start() {
-    audit = { id: Date.now(), setor: setor.value, auditor: auditor.value, data: data.value, respostas: [] };
-    sensoIndex = 0;
-    renderSenso();
-    show("senso");
-}
-
-function renderSenso() {
-    let html = `<div class="card"><h2>${sensos[sensoIndex]}</h2>`;
-    for(let i=1; i<=5; i++) {
-        html += `<label>Pergunta ${i}:</label>
-                 <select id="p${i}"><option value="10">Excelente (10)</option><option value="8">Bom (8)</option><option value="5">Regular (5)</option><option value="0">Péssimo (0)</option></select>`;
+    function renderHome() {
+        let html = `<h2>Identificação</h2>
+            <label>Setor:</label>
+            <select id="setor">${setores.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+            <br><br><label>Auditor:</label>
+            <input type="text" id="auditor" placeholder="Seu nome">
+            <br><br><button onclick="startAudit()">Iniciar Auditoria</button>`;
+        document.getElementById('app').innerHTML = html;
     }
-    html += `<label>Plano de Ação:</label><textarea id="plano"></textarea>
-             <label>Foto do Desvio:</label><input type="file" accept="image/*" capture="environment" id="fotoInput">
-             <button class="btn-primary" onclick="salvarSenso()">Próximo</button></div>`;
-    document.getElementById("senso").innerHTML = html;
-}
 
-function salvarSenso() {
-    let notas = [];
-    for(let i=1; i<=5; i++) notas.push(Number(document.getElementById("p"+i).value));
-    let media = (notas.reduce((a,b) => a+b) / 5).toFixed(1);
-    
-    // Simulação de salvamento de imagem (em um banco real seria diferente)
-    audit.respostas.push({ senso: sensos[sensoIndex], media: media, plano: plano.value });
-    
-    sensoIndex++;
-    if(sensoIndex < 5) renderSenso();
-    else {
-        db.push(audit);
-        localStorage.setItem("j2m_db", JSON.stringify(db));
-        openDashboard();
+    function startAudit() {
+        auditoriaData.setor = document.getElementById('setor').value;
+        auditoriaData.auditor = document.getElementById('auditor').value;
+        auditoriaData.data = new Date().toLocaleDateString();
+        renderStep();
     }
-}
 
-function openDashboard() {
-    const fS = document.getElementById("fSetor");
-    fS.innerHTML = '<option value="GERAL">Visão Geral Fábrica</option>';
-    [...new Set(db.map(a => a.setor))].forEach(s => fS.innerHTML += `<option value="${s}">${s}</option>`);
-    renderRelatorio();
-    show("dashboard");
-}
+    function renderStep() {
+        const step = checklist[currentStep];
+        let html = `<h2>${step.senso}</h2>`;
+        step.perguntas.forEach((p, i) => {
+            html += `<div class="pergunta-bloco">
+                <label>${i+1}. ${p}</label>
+                <select id="nota_${i}">
+                    <option value="10">Excelente (Tudo OK)</option>
+                    <option value="8">Bom (Pequenos desvios)</option>
+                    <option value="5">Regular (Atenção necessária)</option>
+                    <option value="0">Péssimo (Grave/Inexistente)</option>
+                </select>
+            </div>`;
+        });
+        html += `<label>Plano de Ação / Observações:</label>
+                 <textarea id="obs" rows="3" placeholder="O que precisa ser melhorado?"></textarea>
+                 <br><br><label>Foto da Evidência:</label>
+                 <input type="file" accept="image/*" capture="environment">
+                 <br><br><button onclick="nextStep()">${currentStep === checklist.length - 1 ? 'Finalizar' : 'Próximo Senso'}</button>`;
+        document.getElementById('app').innerHTML = html;
+    }
 
-function renderRelatorio() {
-    const filtrados = db.filter(a => fSetor.value === "GERAL" || a.setor === fSetor.value);
-    // ... Lógica de Renderização de Tabela e Gráficos (Radar Comparativo) ...
-    // (Mantendo a mesma lógica de cálculo das versões anteriores para consistência)
-    atualizarGraficos(filtrados);
-}
+    function nextStep() {
+        // Lógica para salvar e avançar
+        currentStep++;
+        if(currentStep < checklist.length) renderStep();
+        else alert("Auditoria Concluída! (Simulação de salvamento)");
+    }
 
-function atualizarGraficos(dados) {
-    // Código do Radar e Barra restaurado
-    // Laranja: Atual | Azul: Média Geral | Verde: Meta 8.0
-}
+    renderHome();
 </script>
 </body>
 </html>
