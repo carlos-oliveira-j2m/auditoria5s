@@ -130,4 +130,147 @@ const checklist = [
     }
 ];
 
-let db = JSON.parse(localStorage.getItem("j2m_db") || "[]
+let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
+let audit = {}, sensoIndex = 0;
+
+function start() {
+    if(!document.getElementById('setor').value) return alert("Informe o Setor");
+    audit = { 
+        id: Date.now(), 
+        setor: document.getElementById('setor').value.toUpperCase(), 
+        auditor: document.getElementById('auditor').value, 
+        data: document.getElementById('data').value, 
+        respostas: [] 
+    };
+    sensoIndex = 0; renderSenso();
+}
+
+function renderSenso() {
+    const s = checklist[sensoIndex];
+    let h = `<div class="card"><h2>${sensoIndex+1}º Senso: ${s.s}</h2>`;
+    
+    s.p.forEach((item, i) => {
+        h += `<div class="pergunta-item">
+                <strong>${item.t}</strong>
+                <small>${item.d}</small>
+                <select class="nota-q">
+                    <option value="10">10 - Excelente</option>
+                    <option value="8">8 - Bom</option>
+                    <option value="6">6 - Regular</option>
+                    <option value="4">4 - Ruim (Ação Obrigatória)</option>
+                    <option value="2">2 - Crítico (Ação Obrigatória)</option>
+                </select>
+              </div>`;
+    });
+
+    h += `<h3>Evidências e Plano de Ação</h3>
+          <label>Descrição das Evidências (O que viu?):</label>
+          <textarea id="txtEvidencia" placeholder="Ex: Encontrado vazamento de óleo na prensa 02..."></textarea>
+          
+          <label id="lblPlano">Plano de Ação (Obrigatório se nota < 6):</label>
+          <textarea id="txtPlano" placeholder="O que será feito para corrigir?"></textarea>
+          
+          <button class="btn-primary" onclick="salvarSenso()">GRAVAR SENSO</button></div>`;
+    
+    document.getElementById('senso').innerHTML = h;
+    window.scrollTo(0,0);
+    show('senso');
+}
+
+function salvarSenso() {
+    const notas = Array.from(document.querySelectorAll('.nota-q')).map(sel => Number(sel.value));
+    const media = notas.reduce((a,b)=>a+b,0)/notas.length;
+    const plano = document.getElementById('txtPlano').value.trim();
+    const evidencia = document.getElementById('txtEvidencia').value.trim();
+
+    // VALIDAÇÃO: Plano de ação obrigatório para notas baixas
+    if(media < 6 && plano.length < 5) {
+        document.getElementById('txtPlano').classList.add('obrigatorio');
+        alert("ALERTA: Para notas abaixo de 6.0, o Plano de Ação é obrigatório!");
+        return;
+    }
+
+    audit.respostas[sensoIndex] = { media: media.toFixed(1), evidencia: evidencia, plano: plano };
+    
+    sensoIndex++;
+    if(sensoIndex < checklist.length) renderSenso();
+    else finalizar();
+}
+
+function finalizar() {
+    db.push(audit);
+    localStorage.setItem("j2m_db", JSON.stringify(db));
+    fetch(API_GOOGLE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
+    alert("Auditoria Finalizada com Sucesso!");
+    openDashboard();
+}
+
+async function puxarDados() {
+    alert("Sincronizando...");
+    try {
+        const res = await fetch(API_GOOGLE);
+        const data = await res.json();
+        db = data.slice(1).map(row => ({ id: row[10], setor: row[1], auditor: row[3], data: row[9], respostas: JSON.parse(row[11]) }));
+        localStorage.setItem("j2m_db", JSON.stringify(db));
+        alert("Sincronizado!"); openDashboard();
+    } catch(e) { alert("Erro na rede."); }
+}
+
+function openDashboard() {
+    renderRelatorio();
+    show("dashboard");
+}
+
+function renderRelatorio() {
+    if(db.length === 0) return;
+    const ult = db[db.length - 1];
+    
+    // KPIs
+    document.getElementById("totalAuditorias").innerText = db.length;
+    let somaT = db.reduce((acc, a) => acc + (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5), 0);
+    document.getElementById("mediaGeralFabrica").innerText = (somaT / db.length).toFixed(1);
+
+    // Radar
+    new Chart(document.getElementById('cRadar'), {
+        type: 'radar',
+        data: {
+            labels: ["Utilização", "Arrumação", "Limpeza", "Saúde", "Auto-Disciplina"],
+            datasets: [{ label: ult.setor, data: ult.respostas.map(r => r.media), backgroundColor: 'rgba(240,102,57,0.2)', borderColor: '#f06639' }]
+        },
+        options: { scales: { r: { min: 0, max: 10 } } }
+    });
+
+    // Comparativo Setores (Barra)
+    const setores = [...new Set(db.map(d=>d.setor))];
+    const notasSetores = setores.map(s => {
+        const d = db.filter(x=>x.setor===s);
+        return (d.reduce((acc, a) => acc + (a.respostas.reduce((x,y)=>x+Number(y.media),0)/5), 0) / d.length).toFixed(1);
+    });
+
+    new Chart(document.getElementById('cBarra'), {
+        type: 'bar',
+        data: { labels: setores, datasets: [{ label: 'Média Final', data: notasSetores, backgroundColor: '#5d5a51' }] },
+        options: { plugins: { datalabels: { display: true, anchor: 'end', align: 'top' } } }
+    });
+
+    // Tabela Detalhada com Evidências
+    let h = `<h3>Detalhamento da Última Auditoria: ${ult.setor}</h3><table class="tabela-pdf">
+             <tr><th>SENSO</th><th>NOTA</th><th>EVIDÊNCIAS / PLANO DE AÇÃO</th></tr>`;
+    ult.respostas.forEach((r, i) => {
+        h += `<tr>
+                <td>${checklist[i].s}</td>
+                <td><b>${r.media}</b></td>
+                <td><i>Evidência:</i> ${r.evidencia || 'N/A'}<br><b>Ação:</b> ${r.plano || 'N/A'}</td>
+              </tr>`;
+    });
+    h += "</table>";
+    document.getElementById("relatorioView").innerHTML = h;
+}
+
+function show(id) { 
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
+    document.getElementById(id).classList.add("active"); 
+}
+</script>
+</body>
+</html>
