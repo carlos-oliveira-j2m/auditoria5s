@@ -2,57 +2,41 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Auditoria 5S J2M - v5.0 (Oficial)</title>
+<title>Auditoria 5S J2M - Oficial v4.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <style>
-    :root { --primary: #f06639; --secondary: #5d5a51; --red: #dc3545; --green: #10b981; }
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { margin: 0; background: #f4f7f6; }
-    header { background: var(--secondary); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); font-weight: bold; font-size: 20px; }
-    
-    .screen { display: none; padding: 15px; max-width: 1000px; margin: auto; }
-    .active { display: block; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 6px solid var(--primary); }
-    
-    /* Indicadores Estilo PDF Aprovado */
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .stat-box { background: white; padding: 15px; border-radius: 8px; text-align: center; border-top: 4px solid var(--primary); }
-    .stat-box h1 { margin: 5px 0; color: var(--primary); font-size: 32px; }
-    .stat-box p { margin: 0; font-size: 12px; font-weight: bold; color: #666; }
-
-    label { font-weight: bold; display: block; margin-top: 15px; font-size: 14px; }
-    select, input, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; margin-top: 5px; font-size: 15px; }
-    
-    button { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; width: 100%; margin-top: 10px; transition: 0.3s; }
-    .btn-main { background: var(--primary); }
-    .btn-sync { background: #007bff; }
+    :root { --primary: #f06639; --secondary: #5d5a51; --red: #dc3545; --green: #10b981; --blue: #007bff; }
+    *{box-sizing:border-box; font-family: 'Segoe UI', sans-serif;}
+    body { margin:0; background: #f4f7f6; color: #333; }
+    header { background: var(--secondary); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); font-weight: bold; font-size: 22px; }
+    .screen { display:none; padding:15px; max-width: 1000px; margin: auto; }
+    .active { display:block; animation: fadeIn 0.4s; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); margin-bottom: 20px; }
+    button { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; }
+    .btn-next { background: var(--primary); width: 100%; margin-top:15px; font-size: 16px;}
+    .btn-sync { background: var(--blue); width: 100%; margin-top: 10px; }
     .btn-pdf { background: var(--green); }
-
-    .teia-box { height: 450px; width: 100%; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-    table th { background: #eee; padding: 10px; text-align: left; }
-    table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
-
-    @media print {
-        .no-print { display: none !important; }
-        .screen { display: block !important; }
-        .card { box-shadow: none; border: 1px solid #eee; page-break-inside: avoid; }
-        body { background: white; }
-    }
+    label { font-weight: bold; display: block; margin-top: 12px; font-size: 14px; color: #555; }
+    select, input, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; margin-top: 5px; font-size: 15px; }
+    .teia-box { height: 450px; width: 100%; background: white; }
+    .plano-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .plano-item b { color: var(--primary); display: block; text-transform: uppercase; font-size: 12px; }
+    @media print { .no-print { display:none !important; } .screen { display:block !important; } .card { border: 1px solid #eee; box-shadow: none; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
 <body>
 
-<header>AUDITORIA 5S J2M</header>
+<header>AUDITORIA 5S - J2M</header>
 
-<div id="home" class="screen active no-print">
+<div id="home" class="screen active">
     <div class="card">
-        <h2>Painel de Auditoria</h2>
+        <h2>Nova Avaliação</h2>
         <label>Setor:</label>
         <select id="setor">
-            <option value="">Selecione...</option>
+            <option value="">Selecione o Setor...</option>
             <option value="ADM FILIAL">ADM FILIAL</option><option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
             <option value="ENG. SOLVE">ENG. SOLVE</option><option value="INJEÇÃO">INJEÇÃO</option>
             <option value="LOGISTICA FILIAL">LOGISTICA FILIAL</option><option value="LOGISTICA MATRIZ">LOGISTICA MATRIZ</option>
@@ -61,78 +45,71 @@
             <option value="QUALIDADE">QUALIDADE</option><option value="EXPEDIÇÃO">EXPEDIÇÃO</option>
             <option value="SALA ELETRONICOS">SALA ELETRONICOS</option><option value="SALA IMPETUS">SALA IMPETUS</option>
         </select>
-        <label>Auditor:</label><input type="text" id="auditor">
+        <label>Responsável:</label><input type="text" id="responsavel" placeholder="Quem responde pelo setor?">
+        <label>Auditor:</label><input type="text" id="auditor" placeholder="Seu nome">
         <label>Data:</label><input type="date" id="data_audit">
-        
-        <button class="btn-main" onclick="iniciar()">Iniciar Nova Auditoria</button>
-        <button class="btn-sync" onclick="sincronizar()">Sincronizar Celular / PC</button>
-        <button style="background:var(--secondary)" onclick="abrirDash()">Ver Relatório e Gráficos</button>
+        <button class="btn-next" onclick="iniciar()">Iniciar Auditoria</button>
+        <button id="btnSync" class="btn-sync" onclick="puxarDaNuvem()">Sincronizar Celular/PC</button>
+        <button style="background:var(--secondary); width:100%; margin-top:10px" onclick="abrirDash()">Ver Histórico/Dashboard</button>
     </div>
 </div>
 
 <div id="senso_screen" class="screen"></div>
 
 <div id="dashboard" class="screen">
-    <div class="stats">
-        <div class="stat-box"><p>TOTAL DE AUDITORIAS</p><h1 id="count-audits">0</h1></div>
-        <div class="stat-box"><p>MÉDIA GERAL FÁBRICA</p><h1 id="avg-factory">0.0</h1></div>
+    <div id="pdf_header" style="display:none; text-align:center; margin-bottom:20px; border-bottom:2px solid var(--primary);">
+        <h2 style="color:var(--primary); margin-bottom:5px;">RELATÓRIO DE AUDITORIA 5S</h2>
+        <p id="pdf_dados_top" style="font-weight:bold;"></p>
     </div>
-
-    <div class="card">
-        <h3 style="margin:0 0 15px 0">Gráfico de Radar (5 Senso)</h3>
-        <div class="teia-box"><canvas id="chartRadar"></canvas></div>
-    </div>
-
     <div class="card no-print">
-        <h3 style="margin:0 0 15px 0">Comparativo entre Setores</h3>
-        <div style="height:300px"><canvas id="chartBarras"></canvas></div>
+        <div style="display:flex; gap:10px">
+            <select id="fSetor" onchange="filtrar()"></select>
+            <button class="btn-pdf" onclick="window.print()">Gerar PDF</button>
+            <button style="background:#444" onclick="location.reload()">Início</button>
+        </div>
     </div>
-
-    <div class="card">
-        <h3>Histórico e Notas</h3>
-        <div id="lista_hist"></div>
-    </div>
-
-    <div class="no-print" style="display:flex; gap:10px;">
-        <button class="btn-pdf" onclick="window.print()">Imprimir PDF</button>
-        <button style="background:#666" onclick="location.reload()">Voltar</button>
-    </div>
+    <div class="card"><div class="teia-box"><canvas id="chartRadar"></canvas></div></div>
+    <div class="card"><h3>Ações Corretivas do Setor</h3><div id="lista_acoes"></div></div>
+    <div class="card no-print"><h3>Histórico de Registros</h3><div id="lista_hist"></div></div>
 </div>
 
 <script>
 Chart.register(ChartDataLabels);
+
+// SEU LINK GOOGLE (MANTIDO)
 const API = "https://script.google.com/macros/s/AKfycbwPjqUwMg-YiCxlMhBujpMDUZZqZ_mZFFRIwyXUkojM40H_IaIjSr6utfevshUg5WFv/exec";
 
-const perguntas = [
-    { s: "SELEÇÃO", p: ["Ferramentas necessárias?", "Itens duplicados?", "Acondicionamento?", "Docs OK?", "Informativos?"] },
-    { s: "ORDENAÇÃO", p: ["Piso marcado?", "Etiquetagem?", "Limpeza organizada?", "Identificação?", "Objetos pessoais?"] },
-    { s: "LIMPEZA", p: ["Máquinas limpas?", "Piso OK?", "Condições técnicas?", "Áreas comuns?", "Coleta seletiva?"] },
-    { s: "PADRONIZAÇÃO", p: ["Documentação?", "Ergonomia?", "Lixeiras?", "Segurança?"] },
-    { s: "AUTODISCIPLINA", p: ["Consciência?", "Uso de EPIs?", "Gestão à vista?", "Ações anteriores?"] }
+const nomesSensos = ["Seleção", "Ordenação", "Limpeza", "Padronização", "Autodisciplina"];
+const perguntas5S = [
+    { s: "SELEÇÃO", p: ["Ferramentas e equipamentos são necessários?", "Existem itens desnecessários na área?", "Ferramentas acondicionadas corretamente?", "Checklists e documentos atualizados?", "Avisos e quadros são úteis e atuais?"] },
+    { s: "ORDENAÇÃO", p: ["Locais de estoque (paletes/caixas) demarcados?", "Corredores e marcações de piso visíveis?", "Prateleiras e armários identificados?", "Material de limpeza organizado?", "Identificação de pessoal e setores clara?", "Objetos pessoais em local apropriado?"] },
+    { s: "LIMPEZA", p: ["Máquinas e bancadas estão limpas?", "Piso livre de óleo e resíduos?", "Equipamentos em boas condições técnicas?", "Áreas comuns e salas limpas?", "Coleta seletiva sendo respeitada?"] },
+    { s: "PADRONIZAÇÃO", p: ["Documentos e indicadores seguem o padrão?", "Aspectos ergonômicos e iluminação OK?", "Lixeiras identificadas e no local correto?", "Equipamentos de segurança desobstruídos?"] },
+    { s: "AUTODISCIPLINA", p: ["Padrões 5S são mantidos no dia a dia?", "Autoavaliação periódica é realizada?", "Missão e Valores são conhecidos?", "Uso correto de EPIs pela equipe?", "Gestão à vista atualizada?", "Ações da última auditoria resolvidas?"] }
 ];
 
 let db = JSON.parse(localStorage.getItem("j2m_db_v3") || "[]");
 let audit = {}, etapa = 0;
-let chartRadar, chartBarras;
+let myChart;
 
 function iniciar() {
-    if(!setor.value || !auditor.value) return alert("Preencha o setor e auditor!");
-    audit = { id: Date.now(), setor: setor.value, auditor: auditor.value, data: data_audit.value, respostas: [] };
+    if(!setor.value || !auditor.value || !data_audit.value) return alert("Por favor, preencha todos os campos iniciais.");
+    audit = { id: Date.now(), setor: setor.value, responsavel: responsavel.value, auditor: auditor.value, data: data_audit.value, respostas: [] };
     etapa = 0; mostrarSenso();
 }
 
 function mostrarSenso() {
-    const s = perguntas[etapa];
-    let h = `<div class="card"><h2>${s.s}</h2>`;
+    const s = perguntas5S[etapa];
+    let h = `<div class="card"><h2>${etapa+1}º Senso: ${s.s}</h2>`;
     s.p.forEach((p, i) => {
-        h += `<label>${p}</label><select class="p-item">
-            <option value="">Nota...</option>
-            <option value="10">10 (Excelente)</option><option value="8">8 (Bom)</option>
-            <option value="6">6 (Médio)</option><option value="4">4 (Melhorar)</option><option value="2">2 (Crítico)</option>
+        h += `<label>${p}</label><select class="p-item" id="p_${i}">
+            <option value="">Selecione a Nota...</option>
+            <option value="10">10 - Excelente (Sem evidências)</option><option value="8">08 - Bom (1 evidência)</option>
+            <option value="6">06 - Médio (2 evidências)</option><option value="4">04 - Melhorar (3 evidências)</option><option value="2">02 - Crítico (4+ evidências)</option>
         </select>`;
     });
-    h += `<label>Plano de Ação:</label><textarea id="txt_plano"></textarea>
-          <button class="btn-main" onclick="proximo()">Próximo</button></div>`;
+    h += `<label>Plano de Ação (Obrigatório para médias < 6):</label><textarea id="txt_plano" rows="3" placeholder="O que será feito para melhorar?"></textarea>
+          <button class="btn-next" onclick="proximo()">Salvar e Próximo</button></div>`;
     document.getElementById("senso_screen").innerHTML = h;
     trocarTela("senso_screen");
 }
@@ -141,85 +118,95 @@ function proximo() {
     const sels = document.querySelectorAll(".p-item");
     let soma = 0, ok = true;
     sels.forEach(s => { if(!s.value) ok = false; soma += Number(s.value); });
-    if(!ok) return alert("Responda tudo!");
+    if(!ok) return alert("Responda todas as perguntas antes de continuar.");
     
-    audit.respostas.push({ media: soma/sels.length, plano: document.getElementById("txt_plano").value });
+    const media = soma / sels.length;
+    const plano = document.getElementById("txt_plano").value.trim();
+    if(media < 6 && !plano) return alert("Para notas baixas, o Plano de Ação é obrigatório!");
+
+    audit.respostas.push({ media, plano });
     etapa++;
     if(etapa < 5) mostrarSenso();
-    else {
-        db.push(audit);
-        localStorage.setItem("j2m_db_v3", JSON.stringify(db));
-        fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
-        abrirDash();
-    }
+    else finalizar();
 }
 
-async function sincronizar() {
-    alert("Buscando dados na nuvem...");
+function finalizar() {
+    db.push(audit);
+    localStorage.setItem("j2m_db_v3", JSON.stringify(db));
+    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
+    alert("Auditoria finalizada com sucesso!");
+    abrirDash();
+}
+
+async function puxarDaNuvem() {
+    const btn = document.getElementById("btnSync");
+    btn.innerText = "Sincronizando...";
     try {
         const r = await fetch(API);
         const data = await r.json();
         if(data && data.length > 1) {
-            db = data.slice(1).map(row => ({ id: row[10], setor: row[1], auditor: row[3], data: row[9], respostas: JSON.parse(row[11]) }));
+            db = data.slice(1).map(row => ({
+                id: row[10], setor: row[1], responsavel: row[2], auditor: row[3], data: row[9],
+                respostas: JSON.parse(row[11])
+            }));
             localStorage.setItem("j2m_db_v3", JSON.stringify(db));
-            alert("Sincronizado!");
+            alert("Dados recuperados da nuvem!");
             abrirDash();
-        }
-    } catch(e) { alert("Erro de rede."); }
+        } else { alert("A planilha está vazia."); }
+    } catch(e) { alert("Erro ao conectar com a planilha. Verifique a internet."); }
+    btn.innerText = "Sincronizar Celular/PC";
 }
 
 function abrirDash() {
+    const fs = document.getElementById("fSetor");
+    fs.innerHTML = '<option value="TODOS">Filtrar Setor</option>';
+    [...new Set(db.map(x => x.setor))].forEach(s => fs.innerHTML += `<option value="${s}">${s}</option>`);
+    filtrar();
     trocarTela("dashboard");
-    render();
 }
 
-function render() {
-    if(!db.length) return;
-    const ult = db[db.length - 1];
-    
-    // Indicadores
-    document.getElementById("count-audits").innerText = db.length;
-    const somaGeral = db.reduce((acc, a) => acc + (a.respostas.reduce((s, r) => s + r.media, 0) / 5), 0);
-    document.getElementById("avg-factory").innerText = (somaGeral / db.length).toFixed(1);
+function filtrar() {
+    const sel = document.getElementById("fSetor").value;
+    render(sel === "TODOS" ? db : db.filter(x => x.setor === sel));
+}
 
-    // Gráfico Radar (Original)
-    if(chartRadar) chartRadar.destroy();
-    chartRadar = new Chart(document.getElementById("chartRadar"), {
+function render(dados) {
+    if(!dados.length) { document.getElementById("lista_hist").innerHTML = "Nenhum dado encontrado."; return; }
+    const ult = dados[dados.length - 1];
+    const mSetor = [0,1,2,3,4].map(i => (dados.reduce((acc, a) => acc + a.respostas[i].media, 0) / dados.length).toFixed(1));
+    const mGeral = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + a.respostas[i].media, 0) / db.length).toFixed(1));
+
+    document.getElementById("pdf_dados_top").innerText = `Setor: ${ult.setor} | Resp: ${ult.responsavel} | Data: ${ult.data}`;
+
+    if(myChart) myChart.destroy();
+    myChart = new Chart(document.getElementById("chartRadar"), {
         type: 'radar',
         data: {
-            labels: ["Seleção", "Ordenação", "Limpeza", "Padronização", "Disciplina"],
-            datasets: [{ label: ult.setor, data: ult.respostas.map(r => r.media), borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.2)' }]
+            labels: nomesSensos,
+            datasets: [
+                { label: 'Nota Atual', data: mSetor, borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.3)', datalabels: { display: true } },
+                { label: 'Média Fábrica', data: mGeral, borderColor: '#5d5a51', borderDash: [5,5], fill: false },
+                { label: 'Meta 8.0', data: [8,8,8,8,8], borderColor: '#10b981', fill: false }
+            ]
         },
-        options: { scales: { r: { min: 0, max: 10 } } }
+        options: { maintainAspectRatio: false, scales: { r: { min: 0, max: 10, ticks: { display: false } } } }
     });
 
-    // Gráfico Barras (Estilo PDF Aprovado)
-    const setores = [...new Set(db.map(a => a.setor))];
-    const medias = setores.map(s => {
-        const filtra = db.filter(a => a.setor === s);
-        return (filtra.reduce((acc, a) => acc + (a.respostas.reduce((s, r) => s + r.media, 0) / 5), 0) / filtra.length).toFixed(1);
+    let hAcoes = "";
+    ult.respostas.forEach((r, i) => { if(r.plano) hAcoes += `<div class='plano-item'><b>${nomesSensos[i]}</b> ${r.plano}</div>`; });
+    document.getElementById("lista_acoes").innerHTML = hAcoes || "Setor em conformidade (Sem ações pendentes).";
+    
+    let hHist = "<table style='width:100%; border-collapse:collapse; font-size:13px;'>";
+    dados.slice().reverse().forEach(a => {
+        hHist += `<tr style='border-bottom:1px solid #eee; height:35px'><td>${a.data}</td><td>${a.setor}</td><td style='text-align:right'><button onclick="excluir(${a.id})" style='background:red;padding:2px 5px; font-size:10px'>X</button></td></tr>`;
     });
-
-    if(chartBarras) chartBarras.destroy();
-    chartBarras = new Chart(document.getElementById("chartBarras"), {
-        type: 'bar',
-        data: { labels: setores, datasets: [{ label: 'Nota Final', data: medias, backgroundColor: '#f06639' }] },
-        options: { scales: { y: { min: 0, max: 10 } } }
-    });
-
-    // Tabela Histórico
-    let h = "<table><tr><th>Data</th><th>Setor</th><th>Nota</th></tr>";
-    db.slice().reverse().forEach(a => {
-        const nota = (a.respostas.reduce((s, r) => s + r.media, 0) / 5).toFixed(1);
-        h += `<tr><td>${a.data}</td><td>${a.setor}</td><td><b>${nota}</b></td></tr>`;
-    });
-    document.getElementById("lista_hist").innerHTML = h + "</table>";
+    document.getElementById("lista_hist").innerHTML = hHist + "</table>";
 }
 
-function trocarTela(id) {
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
+function excluir(id) { if(confirm("Deseja apagar este registro?")) { db = db.filter(x => x.id !== id); localStorage.setItem("j2m_db_v3", JSON.stringify(db)); filtrar(); } }
+function trocarTela(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+window.onbeforeprint = () => { document.getElementById("pdf_header").style.display = "block"; };
+window.onafterprint = () => { document.getElementById("pdf_header").style.display = "none"; };
 </script>
 </body>
 </html>
