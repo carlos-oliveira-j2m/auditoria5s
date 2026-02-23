@@ -211,4 +211,19 @@ function renderRelatorio() {
     if(chartBar) chartBar.destroy();
     chartBar = new Chart(document.getElementById('cBarra'), {
         type: 'bar',
-        data: {
+        data: { labels: setores, datasets: [{ label: 'Notas', data: notas, backgroundColor: '#5d5a51' }] },
+        options: { scales: { y: { min: 0, max: 10 } } }
+    });
+
+    const list = document.getElementById('lista-hist');
+    list.innerHTML = "";
+    dados.slice().reverse().forEach(a => {
+        const n = (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5).toFixed(1);
+        list.innerHTML += `<tr><td>${a.data}</td><td>${a.setor}</td><td>${n}</td><td><button onclick="excluir(${a.id})" style="background:red; color:white; border:none; padding:5px; border-radius:4px">X</button></td></tr>`;
+    });
+}
+
+function excluir(id) { if(confirm("Excluir?")) { db = db.filter(x => x.id !== id); localStorage.setItem("j2m_db", JSON.stringify(db)); renderRelatorio(); } }
+</script>
+</body>
+</html>
