@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Auditoria 5S J2M - v2.5 Enterprise</title>
+<title>Auditoria 5S J2M - v2.8 PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -11,48 +11,44 @@
     *{box-sizing:border-box; font-family: 'Segoe UI', sans-serif;}
     body { margin:0; background: #f4f7f6; color: #333; }
     header { background: var(--secondary); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); font-size: 20px; font-weight: bold; }
-    .screen { display:none; padding:20px; max-width: 1200px; margin: auto; }
+    .screen { display:none; padding:15px; max-width: 1000px; margin: auto; }
     .active { display:block; animation: fadeIn 0.4s; }
-    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); margin-bottom: 25px; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-left: 8px solid var(--primary); margin-bottom: 20px; }
     
-    .kpi-container { display: flex; gap: 15px; margin-bottom: 20px; }
-    .kpi-card { background: var(--secondary); color: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; border-bottom: 5px solid var(--primary); }
-    .kpi-card h2 { margin: 0; font-size: 35px; color: var(--primary); }
-
-    .filter-bar { background: #eee; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .filter-bar { background: #eee; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
     
-    button { border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; transition: 0.3s; }
-    .btn-next { background: var(--primary); width: 100%; font-size: 16px; margin-top:10px;}
+    button { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; transition: 0.3s; }
+    .btn-next { background: var(--primary); width: 100%; font-size: 16px; margin-top:15px;}
     .btn-pdf { background: var(--green); }
-    .btn-edit { background: #ffc107; color: black; font-size: 11px; padding: 5px 10px; }
-    .btn-del { background: var(--red); font-size: 11px; padding: 5px 10px; }
+    .btn-edit { background: #ffc107; color: black; padding: 5px 8px; font-size: 10px; }
+    .btn-del { background: var(--red); padding: 5px 8px; font-size: 10px; }
     
-    label { font-weight: bold; display: block; margin-top: 10px; color: #444; }
-    select, input, textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; margin-top: 5px; font-size: 14px; }
+    label { font-weight: bold; display: block; margin-top: 12px; color: #444; font-size: 14px; }
+    select, input, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; margin-top: 5px; font-size: 14px; }
 
-    .teia-box { height: 650px; width: 100%; background: white; padding: 10px; border-radius: 12px; }
-    .plano-item { padding: 10px; border-bottom: 1px solid #eee; }
-    .plano-item b { color: var(--primary); text-transform: uppercase; font-size: 12px; }
+    .teia-box { height: 500px; width: 100%; background: white; display: flex; justify-content: center; }
+    .plano-item { padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+    .plano-item b { color: var(--primary); text-transform: uppercase; font-size: 11px; display: block; }
 
-    /* ESTILO PARA PDF */
+    /* ESTILO PARA PDF EXCLUSIVO */
     @media print { 
-        .no-print, header, .btn-next, .btn-pdf, .filter-bar { display:none !important; } 
+        .no-print, header, .filter-bar, button { display:none !important; } 
         .screen { display:block !important; padding: 0; }
-        .card { border: 1px solid #ddd; box-shadow: none; margin-bottom: 10px; page-break-inside: avoid; }
-        .teia-box { height: 500px !important; }
+        .card { border: 1px solid #eee; box-shadow: none; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .teia-box { height: 450px !important; width: 100% !important; }
         body { background: white; }
-        #lista_relatorios { display: none; } /* Esconde o histórico no PDF do gráfico */
+        #lista_relatorios_box { display: none !important; }
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
 <body>
 
-<header id="headerMain">J2M - AUDITORIA 5S v2.5</header>
+<header>AUDITORIA 5S J2M</header>
 
 <div id="home" class="screen active">
     <div class="card">
-        <h2>Identificação</h2>
+        <h2>Nova Auditoria</h2>
         <label>Setor:</label>
         <select id="setor">
             <option value="">Selecione...</option>
@@ -67,39 +63,34 @@
             <option value="MONTAGEM">MONTAGEM</option>
             <option value="PPCP">PPCP</option>
             <option value="QUALIDADE">QUALIDADE</option>
+            <option value="EXPEDIÇÃO">EXPEDIÇÃO</option>
             <option value="SALA ELETRONICOS">SALA ELETRONICOS</option>
             <option value="SALA IMPETUS">SALA IMPETUS</option>
-            <option value="EXPEDIÇÃO">EXPEDIÇÃO</option>
         </select>
         <label>Responsável pela Área:</label><input type="text" id="responsavel">
         <label>Auditor:</label><input type="text" id="auditor">
         <label>Data:</label><input type="date" id="data_audit">
-        <button class="btn-next" onclick="iniciarAuditoria()">Iniciar</button>
-        <button style="background:var(--secondary); width:100%; margin-top:10px" onclick="abrirDashboard()">Dashboard</button>
+        <button class="btn-next" onclick="iniciarAuditoria()">Iniciar Avaliação</button>
+        <button style="background:var(--secondary); width:100%; margin-top:10px" onclick="abrirDashboard()">Ver Histórico/Dashboard</button>
     </div>
 </div>
 
 <div id="senso_screen" class="screen"></div>
 
 <div id="dashboard" class="screen">
+    <div id="pdf_header" style="display:none; text-align:center; margin-bottom:20px; border-bottom:2px solid var(--primary); padding-bottom:10px;">
+        <h2 style="margin:0; color:var(--primary);">RELATÓRIO DE AUDITORIA 5S - J2M</h2>
+        <p id="pdf_dados_top" style="font-weight:bold; font-size:14px;"></p>
+    </div>
+
     <div class="card no-print">
-        <h3>Filtros de Visão</h3>
+        <h3>Filtros</h3>
         <div class="filter-bar">
             <select id="fSetor" onchange="filtrar()"></select>
             <select id="fMes" onchange="filtrar()"></select>
-            <button class="btn-pdf" onclick="window.print()">Gerar PDF do Setor</button>
-            <button style="background:#444" onclick="location.reload()">Início</button>
+            <button class="btn-pdf" onclick="window.print()">Imprimir / PDF</button>
+            <button style="background:#444" onclick="location.reload()">Sair</button>
         </div>
-    </div>
-
-    <div class="card" id="pdf_header" style="display:none; text-align:center;">
-        <h1 style="color:var(--primary); margin:0;">RELATÓRIO DE AUDITORIA 5S</h1>
-        <p id="pdf_info" style="font-weight:bold;"></p>
-    </div>
-
-    <div class="kpi-container no-print">
-        <div class="kpi-card"><h2 id="kpi_media">0.0</h2>Média Setor</div>
-        <div class="kpi-card"><h2 id="kpi_total">0</h2>Auditorias</div>
     </div>
 
     <div class="card">
@@ -107,12 +98,12 @@
     </div>
 
     <div class="card" id="box_acoes">
-        <h3>Ações Corretivas por Senso</h3>
+        <h3>Planos de Ação Pendentes</h3>
         <div id="lista_acoes"></div>
     </div>
     
-    <div class="card no-print">
-        <h3>Histórico de Registros (Editar/Excluir)</h3>
+    <div class="card no-print" id="lista_relatorios_box">
+        <h3>Histórico de Registros</h3>
         <div id="lista_relatorios"></div>
     </div>
 </div>
@@ -121,12 +112,45 @@
 Chart.register(ChartDataLabels);
 
 const nomesSensos = ["Seleção", "Ordenação", "Limpeza", "Padronização", "Autodisciplina"];
+
+// PERGUNTAS COMPLETAS CONFORME PADRÃO
 const checklist = [
-    { s: "1 - SELEÇÃO", p: ["Ferramentas necessárias?", "Itens duplicados?", "Acondicionamento?", "Docs OK?", "Informativos?"] },
-    { s: "2 - ORDENAÇÃO", p: ["Locais marcados?", "Linhas visíveis?", "Etiquetagem?", "Material limpeza?", "Identificação pessoal?", "Objetos pessoais?"] },
-    { s: "3 - LIMPEZA", p: ["Bancadas/Máquinas?", "Piso/Calçadas?", "Condições técnicas?", "Salas descanso?", "Coleta seletiva?"] },
-    { s: "4 - PADRONIZAÇÃO", p: ["Documentação?", "Ergonomia?", "Lixeiras?", "Segurança/Placas?"] },
-    { s: "5 - AUTODISCIPLINA", p: ["Consciência?", "Autoavaliação?", "Missão/Visão?", "Uso de EPIs?", "Gestão à vista?", "Ações anteriores?"] }
+    { s: "SELEÇÃO", p: [
+        "Ferramentas, dispositivos e equipamentos são necessários para o trabalho diário?",
+        "Existem itens duplicados ou desnecessários sobre a bancada/área?",
+        "As ferramentas são acondicionadas corretamente?",
+        "Quadros de gestão, checklists e documentos estão disponíveis e atualizados?",
+        "Todos os avisos e quadros informativos são necessários e atuais?"
+    ]},
+    { s: "ORDENAÇÃO", p: [
+        "Locais de armazenamento (paletes, caixas, carrinhos) estão demarcados?",
+        "Marcações de piso e corredores são claramente visíveis?",
+        "Prateleiras, armários e equipamentos estão identificados/etiquetados?",
+        "O armazenamento de materiais de limpeza é organizado?",
+        "Existe identificação clara de setores e pessoal responsável?",
+        "Objetos de uso pessoal estão guardados em local apropriado?"
+    ]},
+    { s: "LIMPEZA", p: [
+        "Bancadas, máquinas e equipamentos estão limpos?",
+        "Piso e corredores estão livres de resíduos, óleo ou materiais?",
+        "Ferramentas e equipamentos estão em perfeitas condições técnicas?",
+        "As áreas comuns e salas de descanso estão limpas e organizadas?",
+        "A coleta seletiva está sendo respeitada e os coletores estão limpos?"
+    ]},
+    { s: "PADRONIZAÇÃO", p: [
+        "Documentação e indicadores da área seguem o padrão e estão atualizados?",
+        "Postura, iluminação e aspectos ergonômicos são atendidos?",
+        "Lixeiras são apropriadas, estão marcadas e no local correto?",
+        "Equipamentos de segurança (extintores, placas) estão desobstruídos e OK?"
+    ]},
+    { s: "AUTODISCIPLINA", p: [
+        "Existe consciência e manutenção dos padrões estabelecidos?",
+        "Checklist de autoavaliação 5S é realizado periodicamente no setor?",
+        "Missão, visão, valores e política são conhecidos pela equipe?",
+        "Os funcionários estão usando corretamente os EPIs?",
+        "A área possui padrão de limpeza/organização em gestão à vista?",
+        "As ações corretivas da auditoria anterior foram atendidas?"
+    ]}
 ];
 
 let db = JSON.parse(localStorage.getItem("j2m_db_v3") || "[]");
@@ -134,8 +158,7 @@ let audit = {}, etapa = 0, editandoId = null;
 let myChart;
 
 function iniciarAuditoria() {
-    if(!setor.value || !auditor.value || !data_audit.value) return alert("Preencha os campos obrigatórios!");
-    
+    if(!setor.value || !auditor.value || !data_audit.value) return alert("Preencha todos os campos!");
     if(!editandoId) {
         audit = { 
             id: Date.now(), setor: setor.value, responsavel: responsavel.value, auditor: auditor.value, 
@@ -147,17 +170,21 @@ function iniciarAuditoria() {
 
 function mostrarSenso() {
     const senso = checklist[etapa];
-    let html = `<div class="card"><h2>${senso.s}</h2>`;
+    let html = `<div class="card"><h2>${etapa + 1}º Senso: ${senso.s}</h2>`;
     senso.p.forEach((p, i) => {
-        html += `<label>${p}</label><select class="pergunta-item" id="p_${i}">
-            <option value="">Nota...</option>
-            <option value="10">10 (Excelente)</option><option value="8">8 (Bom)</option>
-            <option value="6">6 (Médio)</option><option value="4">4 (Melhorar)</option><option value="2">2 (Crítico)</option>
+        html += `<label>${p}</label>
+        <select class="pergunta-item" id="p_${i}">
+            <option value="">Selecione...</option>
+            <option value="10">Excelente: Sem evidências (10)</option>
+            <option value="8">Bom: 1 evidência (8)</option>
+            <option value="6">Média: 2 evidências (6)</option>
+            <option value="4">Melhorar: 3 evidências (4)</option>
+            <option value="2">Crítico: 4 ou mais evidências (2)</option>
         </select>`;
     });
     html += `<label>Plano de Ação (Obrigatório p/ Notas < 6):</label>
-             <textarea id="plano_txt" rows="3"></textarea>
-             <button class="btn-next" onclick="validarProximo()">Próximo</button></div>`;
+             <textarea id="plano_txt" rows="3" placeholder="O que será feito?"></textarea>
+             <button class="btn-next" onclick="validarProximo()">Salvar e Continuar</button></div>`;
     document.getElementById("senso_screen").innerHTML = html;
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById("senso_screen").classList.add("active");
@@ -205,22 +232,16 @@ function filtrar() {
     const fs = document.getElementById("fSetor").value;
     const fm = document.getElementById("fMes").value;
     let filtrados = db.filter(a => (fs === "TODOS" || a.setor === fs) && (fm === "TODOS" || a.mes == fm));
-    renderizar(filtrados, fs);
+    renderizar(filtrados);
 }
 
-function renderizar(dados, setorSel) {
+function renderizar(dados) {
     if(dados.length === 0) return;
     const ult = dados[dados.length - 1];
-    
-    // Média do Setor no Filtro
     const mSetor = [0,1,2,3,4].map(i => (dados.reduce((acc, a) => acc + a.respostas[i].media, 0) / dados.length).toFixed(1));
-    // Média de TODOS os setores (Geral)
     const mGeral = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + a.respostas[i].media, 0) / db.length).toFixed(1));
 
-    document.getElementById("kpi_media").innerText = (mSetor.reduce((a,b)=>Number(a)+Number(b),0)/5).toFixed(1);
-    document.getElementById("kpi_total").innerText = dados.length;
-    document.getElementById("pdf_info").innerText = `Setor: ${ult.setor} | Responsável: ${ult.responsavel} | Data: ${ult.data}`;
-    document.getElementById("pdf_header").style.display = window.matchMedia('print').matches ? "block" : "none";
+    document.getElementById("pdf_dados_top").innerText = `Setor: ${ult.setor} | Responsável: ${ult.responsavel} | Data: ${ult.data}`;
 
     if(myChart) myChart.destroy();
     myChart = new Chart(document.getElementById("chartRadar"), {
@@ -228,7 +249,7 @@ function renderizar(dados, setorSel) {
         data: {
             labels: nomesSensos,
             datasets: [
-                { label: 'Nota Setor', data: mSetor, borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.3)', pointRadius: 5, datalabels: { display: true } },
+                { label: 'Nota Atual', data: mSetor, borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.3)', pointRadius: 5, datalabels: { display: true } },
                 { label: 'Média Fábrica', data: mGeral, borderColor: '#5d5a51', borderDash: [5,5], fill: false, pointRadius: 0 },
                 { label: 'Meta 8.0', data: [8,8,8,8,8], borderColor: '#10b981', borderDash: [2,2], fill: false, pointRadius: 0 }
             ]
@@ -240,18 +261,16 @@ function renderizar(dados, setorSel) {
         }
     });
 
-    // Ações Corretivas (Somente as do último relatório do filtro)
     let acoesHtml = "";
     ult.respostas.forEach((r, i) => {
-        if(r.plano) acoesHtml += `<div class="plano-item"><b>${nomesSensos[i]}:</b> ${r.plano}</div>`;
+        if(r.plano) acoesHtml += `<div class="plano-item"><b>${nomesSensos[i]}</b> ${r.plano}</div>`;
     });
     document.getElementById("lista_acoes").innerHTML = acoesHtml || "Nenhuma ação corretiva pendente.";
 
-    // Histórico (Para Editar/Excluir)
-    let histHtml = '<table style="width:100%; font-size:12px; border-collapse:collapse;">';
+    let histHtml = '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
     dados.slice().reverse().forEach(a => {
         histHtml += `<tr style="border-bottom:1px solid #eee"><td>${a.data}</td><td>${a.setor}</td>
-        <td><button class="btn-edit" onclick="editar(${a.id})">E</button><button class="btn-del" onclick="excluir(${a.id})">X</button></td></tr>`;
+        <td style="text-align:right"><button class="btn-edit" onclick="editar(${a.id})">EDITAR</button> <button class="btn-del" onclick="excluir(${a.id})">X</button></td></tr>`;
     });
     document.getElementById("lista_relatorios").innerHTML = histHtml + '</table>';
 }
@@ -267,7 +286,7 @@ function editar(id) {
     document.getElementById("data_audit").value = audit.data;
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById("home").classList.add("active");
-    alert("Dados carregados. Clique em 'Iniciar' para editar os sensos.");
+    alert("Dados carregados. Clique em 'Iniciar Avaliação' para alterar as notas.");
 }
 
 window.onbeforeprint = () => { document.getElementById("pdf_header").style.display = "block"; };
