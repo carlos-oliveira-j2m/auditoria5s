@@ -1,252 +1,343 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Auditoria 5S J2M - v1.2025</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-<style>
-:root { --primary: #f06639; --secondary: #5d5a51; --green: #28a745; --blue: #007bff; --danger: #dc3545; }
-*{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
-
-body { margin:0; min-height:100vh; background:#f0f2f5 url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1600') no-repeat center center fixed; background-size:cover; }
-body::before { content: ""; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.92); z-index:-1; }
-
-header { background:var(--secondary); padding:15px; text-align:center; border-bottom:5px solid var(--primary); color:white; font-weight:bold; font-size:22px; }
-.screen { display:none; padding:20px; max-width:1100px; margin:auto; }
-.active { display:block; animation: fadeIn 0.3s; }
-
-.card { background:white; padding:20px; border-radius:8px; margin-bottom:15px; border-left:5px solid var(--primary); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-.pergunta { margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #eee; }
-.desc { font-size:12px; color:#666; display:block; margin-bottom:5px; font-style: italic; }
-
-select, input, textarea { width:100%; padding:12px; border-radius:4px; border:1px solid #ccc; margin-bottom:10px; font-size:14px; }
-.campo-erro { border: 2px solid var(--danger) !important; background: #fff1f1; }
-
-button { border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold; text-transform:uppercase; color:white; width:100%; margin-bottom:10px; transition: 0.2s; }
-.btn-p { background:var(--primary); }
-.btn-p:hover { background: #d4562d; }
-.btn-b { background:var(--blue); }
-
-.kpis { display:flex; gap:15px; margin-bottom:20px; }
-.kpi { background:var(--secondary); color:white; padding:15px; border-radius:8px; flex:1; text-align:center; border-bottom:4px solid var(--primary); }
-.kpi h2 { margin:0; color:var(--primary); font-size:32px; }
-
-.tabela { width:100%; border-collapse:collapse; margin-top:20px; background: white; }
-.tabela th, .tabela td { border:1px solid #ccc; padding:12px; text-align:left; font-size:13px; }
-.plano-box { background:#fffde7; border:1px solid #ffd600; padding:10px; border-radius:4px; font-size:13px; margin-top:8px; color: #333; border-left: 5px solid #ffd600; }
-
-@media print { .no-print { display:none !important; } .screen { display:block !important; } body { background:white; } .card { box-shadow:none; border: 1px solid #ccc; } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
+    <meta charset="UTF-8">
+    <title>Auditoria 5S J2M - Enterprise v2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root { --primary: #f06639; --secondary: #5d5a51; --green: #28a745; --blue: #007bff; --danger: #dc3545; --bg-card: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background: #f4f7f6; color: #333; }
+        header { background: var(--secondary); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--primary); font-size: 24px; font-weight: bold; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .screen { display: none; animation: fadeIn 0.4s; }
+        .active { display: block; }
+        .card { background: var(--bg-card); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 6px solid var(--primary); }
+        h2 { color: var(--secondary); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        label { font-weight: bold; display: block; margin: 10px 0 5px; color: #444; }
+        select, input, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; margin-bottom: 10px; }
+        .pergunta-box { background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #eee; }
+        .pergunta-txt { font-weight: 600; color: #333; display: block; margin-bottom: 5px; }
+        .pergunta-desc { font-size: 13px; color: #666; font-style: italic; display: block; margin-bottom: 10px; line-height: 1.4; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        button { border: none; padding: 15px; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; color: white; }
+        .btn-primary { background: var(--primary); width: 100%; }
+        .btn-blue { background: var(--blue); width: 100%; }
+        .btn-dark { background: var(--secondary); width: 100%; }
+        .invalid { border: 2px solid var(--danger) !important; background: #fff5f5; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: var(--secondary); color: white; padding: 20px; border-radius: 8px; text-align: center; border-bottom: 5px solid var(--primary); }
+        .kpi-card h3 { margin: 0; font-size: 32px; color: var(--primary); }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .plano-acao-relatorio { background: #fff8e1; border-left: 5px solid #ffc107; padding: 10px; margin-top: 10px; font-size: 14px; }
+        @media print { .no-print { display: none !important; } .screen { display: block !important; } .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
 </head>
 <body>
 
 <header>AUDITORIA 5S J2M - v1.2025</header>
 
-<div id="scr_home" class="screen active">
-    <div class="card">
-        <h3>Nova Auditoria</h3>
-        <label>Setor:</label>
-        <select id="setor">
-            <option value="">-- SELECIONE O SETOR --</option>
-            <option value="ADM FILIAL">ADM FILIAL</option>
-            <option value="ALMOXARIFADO/ESTOQUE">ALMOXARIFADO/ESTOQUE</option>
-            <option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
-            <option value="INJEÇÃO">INJEÇÃO</option>
-            <option value="MATRIZARIA">MATRIZARIA</option>
-            <option value="MONTAGEM">MONTAGEM</option>
-            <option value="PPCP">PPCP</option>
-            <option value="QUALIDADE">QUALIDADE</option>
-        </select>
-        <label>Auditor:</label><input type="text" id="auditor" placeholder="Nome do responsável">
-        <label>Data:</label><input type="date" id="data">
-        <button class="btn-p" onclick="iniciar()">INICIAR AVALIAÇÃO</button>
-        <button class="btn-b" onclick="sincronizar()">🔄 SINCRONIZAR COM NUVEM</button>
-        <button style="background:var(--secondary)" onclick="abrirDash()">DASHBOARD E FILTROS</button>
-    </div>
-</div>
-
-<div id="scr_audit" class="screen">
-    <div id="box_perguntas"></div>
-</div>
-
-<div id="scr_dash" class="screen">
-    <div class="no-print card">
-        <div style="display:flex; gap:10px; flex-wrap: wrap;">
-            <div style="flex:1; min-width:150px;"><label>Setor</label><select id="f_setor" onchange="renderRelatorio()"></select></div>
-            <div style="flex:1; min-width:100px;"><label>Mês</label><select id="f_mes" onchange="renderRelatorio()">
-                <option value="T">Todos</option><option value="0">Jan</option><option value="1">Fev</option><option value="2">Mar</option>
-            </select></div>
-            <div style="flex:1; min-width:100px;"><label>Ano</label><select id="f_ano" onchange="renderRelatorio()"><option value="2026">2026</option><option value="2025">2025</option></select></div>
-            <button class="btn-b" onclick="window.print()" style="width:150px; margin-top:25px;">PDF</button>
-            <button style="background:#666; width:150px; margin-top:25px;" onclick="location.reload()">VOLTAR</button>
+<div class="container">
+    <div id="scr_home" class="screen active">
+        <div class="card">
+            <h2>Identificação</h2>
+            <label>Setor:</label>
+            <select id="setor">
+                <option value="">-- SELECIONE --</option>
+                <option value="ADM FILIAL">ADM FILIAL</option>
+                <option value="ALMOXARIFADO/ESTOQUE">ALMOXARIFADO/ESTOQUE</option>
+                <option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
+                <option value="INJEÇÃO">INJEÇÃO</option>
+                <option value="MATRIZARIA">MATRIZARIA</option>
+                <option value="MONTAGEM">MONTAGEM</option>
+                <option value="QUALIDADE">QUALIDADE</option>
+                <option value="LOGISTICA MATRIZ">LOGISTICA MATRIZ</option>
+                <option value="MANUTENÇÃO">MANUTENÇÃO</option>
+                <option value="ENGENHARIA SOLVE">ENGENHARIA SOLVE</option>
+            </select>
+            <label>Auditor:</label><input type="text" id="auditor" placeholder="Nome completo">
+            <label>Data:</label><input type="date" id="data">
+            <button class="btn-primary" onclick="iniciarAudit()">INICIAR NOVA AUDITORIA</button>
+            <div class="btn-row">
+                <button class="btn-blue" onclick="syncCloud()">🔄 SINCRONIZAR NUVEM</button>
+                <button class="btn-dark" onclick="abrirDash()">DASHBOARD / HISTÓRICO</button>
+            </div>
         </div>
     </div>
 
-    <div class="kpis">
-        <div class="kpi"><h2 id="k_media">0.0</h2>MÉDIA DA FÁBRICA</div>
-        <div class="kpi"><h2 id="k_total">0</h2>AUDITORIAS</div>
+    <div id="scr_audit" class="screen">
+        <div id="senso_container"></div>
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(450px, 1fr)); gap:20px;">
-        <div class="card"><h3>Radar: Setor vs Fábrica vs Meta</h3><canvas id="chartRadar"></canvas></div>
-        <div class="card"><h3>Comparativo entre Áreas</h3><canvas id="chartBarra"></canvas></div>
+    <div id="scr_dash" class="screen">
+        <div class="no-print card">
+            <h2>Filtros de Relatório</h2>
+            <div class="btn-row">
+                <select id="f_setor" onchange="renderDash()"></select>
+                <select id="f_mes" onchange="renderDash()">
+                    <option value="ALL">Todos os Meses</option>
+                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                </select>
+            </div>
+            <div class="btn-row">
+                <button class="btn-blue" onclick="window.print()">GERAR PDF / IMPRIMIR</button>
+                <button class="btn-dark" onclick="location.reload()">VOLTAR AO INÍCIO</button>
+            </div>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card"><h3 id="k_media">0.0</h3>MÉDIA FÁBRICA</div>
+            <div class="kpi-card"><h3 id="k_total">0</h3>TOTAL AUDITORIAS</div>
+        </div>
+
+        <div class="chart-grid">
+            <div class="card"><canvas id="radarSetor"></canvas></div>
+            <div class="card"><canvas id="barraRanking"></canvas></div>
+        </div>
+
+        <div id="relatorio_detalhado"></div>
     </div>
-    <div id="relatorio_final"></div>
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcntNB7ErwLkye0Y7kAoqneoeMAs_MMe7YvszVdHGrHJUGacpixxAYV9LDppBlUoNx/exec";
+const URL_API = "https://script.google.com/macros/s/AKfycbzcntNB7ErwLkye0Y7kAoqneoeMAs_MMe7YvszVdHGrHJUGacpixxAYV9LDppBlUoNx/exec";
 
-const estrutura = [
-    { s: "UTILIZAÇÃO", p: ["Apenas itens necessários no local?", "Descarte de materiais obsoletos?", "Organização de documentos/papéis?"] },
-    { s: "ORDENAÇÃO", p: ["Identificação de locais e etiquetas?", "Demarcação de solo e áreas?", "Facilidade de acesso aos itens?"] },
-    { s: "LIMPEZA", p: ["Máquinas e postos sem sujeira/óleo?", "Piso e lixeiras em ordem?", "Conservação geral do ambiente?"] },
-    { s: "SAÚDE/PADRONIZAÇÃO", p: ["Uso correto de EPIs?", "Gestão visual atualizada?"] },
-    { s: "DISCIPLINA", p: ["Padrões mantidos pela equipe?", "Execução de melhorias contínuas?"] }
+// AS 26 PERGUNTAS DETALHADAS
+const checklist = [
+    { s: "SELEÇÃO (UTILIZAÇÃO)", p: [
+        {t: "Equipamentos e Ferramentas", d: "Existem itens desnecessários, quebrados ou sem uso no posto de trabalho?"},
+        {t: "Materiais e Estoque", d: "Há excesso de matéria-prima ou caixas acumuladas sem necessidade?"},
+        {t: "Documentos e Papéis", d: "Existem formulários, desenhos ou ordens de serviço obsoletas?"},
+        {t: "Objetos Pessoais", d: "Armários e bancadas estão livres de itens pessoais em excesso?"},
+        {t: "Área de Descarte", d: "Os itens para descarte estão em local sinalizado?"}
+    ]},
+    { s: "ORDENAÇÃO (ARRUMAÇÃO)", p: [
+        {t: "Identificação de Itens", d: "Ferramentas e objetos possuem etiquetas de identificação clara?"},
+        {t: "Locais Definidos", d: "Cada item tem um lugar fixo definido e demarcado?"},
+        {t: "Demarcação de Piso", d: "Corredores, áreas de estoque e segurança estão pintados/marcados?"},
+        {t: "Facilidade de Acesso", d: "Itens de uso frequente estão à mão? Leva-se menos de 30s para achar algo?"},
+        {t: "Arquivamento", d: "Pastas e documentos digitais estão nomeados e organizados?"}
+    ]},
+    { s: "LIMPEZA", p: [
+        {t: "Piso e Paredes", d: "O chão está livre de poeira, óleo ou lixo?"},
+        {t: "Máquinas e Dispositivos", d: "Equipamentos estão limpos, sem vazamentos ou crostas de sujeira?"},
+        {t: "Lixeiras", d: "As lixeiras estão limpas, com saco plástico e identificadas?"},
+        {t: "Iluminação e Ventilação", d: "Lâmpadas estão limpas e funcionando? Janelas e ventiladores limpos?"},
+        {t: "Responsabilidade", d: "A equipe mantém o hábito de limpar após o uso?"}
+    ]},
+    { s: "PADRONIZAÇÃO (SAÚDE)", p: [
+        {t: "EPIs", d: "Todos os colaboradores utilizam os EPIs necessários para a área?"},
+        {t: "Gestão Visual", d: "Quadros de avisos estão atualizados e limpos?"},
+        {t: "Segurança", d: "Extintores, hidrantes e saídas de emergência estão desobstruídos?"},
+        {t: "Condições de Higiene", d: "Bebedouros e áreas comuns estão em condições sanitárias adequadas?"},
+        {t: "Uniformização", d: "Colaboradores estão com uniformes limpos e adequados?"},
+        {t: "Padrão de Trabalho", d: "Existem POPs ou padrões visuais afixados?"}
+    ]},
+    { s: "DISCIPLINA", p: [
+        {t: "Comprometimento", d: "A equipe demonstra conhecer as regras do 5S?"},
+        {t: "Melhoria Contínua", d: "Existem evidências de melhorias feitas desde a última auditoria?"},
+        {t: "Cumprimento de Horários", d: "Há pontualidade e respeito às rotinas da empresa?"},
+        {t: "Educação e Respeito", d: "O clima organizacional e o trato entre colegas é profissional?"},
+        {t: "Manutenção dos Sensos", d: "Os 4 sensos anteriores estão sendo mantidos consistentemente?"}
+    ]}
 ];
 
 let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-let audit = {}, passo = 0;
-let rChart, bChart;
+let audit = {}, sensoAtual = 0;
+let radarObj, barraObj;
 
-function iniciar() {
+function iniciarAudit() {
     const s = document.getElementById('setor').value;
-    if(!s) return alert("Selecione o Setor!");
-    audit = { id: Date.now(), setor: s, auditor: document.getElementById('auditor').value, data: document.getElementById('data').value, respostas: [] };
-    passo = 0;
-    renderPasso();
+    const a = document.getElementById('auditor').value;
+    const d = document.getElementById('data').value;
+    if(!s || !a || !d) return alert("Preencha todos os campos de identificação!");
+    
+    audit = { id: Date.now(), setor: s, auditor: a, data: d, respostas: [] };
+    sensoAtual = 0;
+    renderSenso();
 }
 
-function renderPasso() {
-    const senso = estrutura[passo];
-    let h = `<div class="card"><h2>${passo+1}º Senso: ${senso.s}</h2>`;
-    senso.p.forEach((p, i) => {
-        h += `<div class="pergunta"><strong>${p}</strong>
-              <select class="nota-aud"><option value="">-- SELECIONE A NOTA --</option>
-              <option value="10">10 - Excelente</option><option value="8">8 - Bom</option>
-              <option value="6">6 - Regular</option><option value="4">4 - Ruim</option><option value="2">2 - Crítico</option></select></div>`;
+function renderSenso() {
+    const senso = checklist[sensoAtual];
+    let html = `<div class="card"><h2>${sensoAtual + 1}º Senso: ${senso.s}</h2>`;
+    
+    senso.p.forEach((item, i) => {
+        html += `<div class="pergunta-box">
+                    <span class="pergunta-txt">${item.t}</span>
+                    <span class="pergunta-desc">${item.d}</span>
+                    <select class="nota-sel">
+                        <option value="">Selecione a Nota...</option>
+                        <option value="10">10 - Excelente (Padrão Total)</option>
+                        <option value="8">8 - Bom (Pequenos desvios)</option>
+                        <option value="6">6 - Regular (Requer atenção)</option>
+                        <option value="4">4 - Ruim (Desorganizado)</option>
+                        <option value="2">2 - Crítico (Urgente)</option>
+                    </select>
+                 </div>`;
     });
-    h += `<label><b>Respostas Explicativas (Evidências):</b></label>
-          <textarea id="txt_evid" placeholder="Descreva o que foi observado neste senso..."></textarea>
-          <label><b>Plano de Ação (Obrigatório p/ nota < 6):</b></label>
-          <textarea id="txt_plano" placeholder="O que será feito para corrigir?"></textarea>
-          <button class="btn-p" onclick="proximo()">GRAVAR SENSO</button></div>`;
-    document.getElementById('box_perguntas').innerHTML = h;
+
+    html += `<h3>Evidências e Ações do Senso</h3>
+             <label>Descrição das Evidências (O que foi observado?):</label>
+             <textarea id="evid_txt" rows="3" placeholder="Ex: Vazamento de óleo na prensa 02..."></textarea>
+             <label>Plano de Ação (Obrigatório se Nota < 6):</label>
+             <textarea id="plano_txt" rows="3" placeholder="O que será feito para corrigir?"></textarea>
+             <button class="btn-primary" onclick="salvarSenso()">GRAVAR E CONTINUAR</button></div>`;
+    
+    document.getElementById('senso_container').innerHTML = html;
+    window.scrollTo(0,0);
     show('scr_audit');
 }
 
-function proximo() {
-    const notasUI = document.querySelectorAll('.nota-aud');
+function salvarSenso() {
+    const selects = document.querySelectorAll('.nota-sel');
     let notas = [];
-    for(let n of notasUI) {
-        if(!n.value) { n.classList.add('campo-erro'); return alert("Nota Obrigatória! Preencha todos os campos."); }
-        notas.push(Number(n.value));
-    }
-    
-    const media = (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(1);
-    const plano = document.getElementById('txt_plano').value.trim();
-    const evid = document.getElementById('txt_evid').value.trim();
+    let incompleto = false;
+
+    selects.forEach(s => {
+        if(!s.value) { s.classList.add('invalid'); incompleto = true; }
+        else { s.classList.remove('invalid'); notas.push(Number(s.value)); }
+    });
+
+    if(incompleto) return alert("Todas as notas deste senso devem ser preenchidas!");
+
+    const media = (notas.reduce((a,b) => a+b, 0) / notas.length).toFixed(1);
+    const plano = document.getElementById('plano_txt').value.trim();
+    const evid = document.getElementById('evid_txt').value.trim();
 
     if(media < 6 && plano.length < 5) {
-        document.getElementById('txt_plano').classList.add('campo-erro');
-        return alert("Média inferior a 6.0! O Plano de Ação é obrigatório para este senso.");
+        document.getElementById('plano_txt').classList.add('invalid');
+        return alert("Média " + media + ". Plano de Ação OBRIGATÓRIO para notas baixas!");
     }
 
     audit.respostas.push({ media, plano, evid });
-    passo++;
-    
-    if(passo < estrutura.length) renderPasso();
-    else finalizar();
+    sensoAtual++;
+
+    if(sensoAtual < checklist.length) renderSenso();
+    else finalizarAudit();
 }
 
-function finalizar() {
+function finalizarAudit() {
     db.push(audit);
     localStorage.setItem("j2m_db", JSON.stringify(db));
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
-    alert("Auditoria finalizada com sucesso!");
+    
+    // Enviar via POST
+    fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
+    
+    alert("Auditoria finalizada e salva com sucesso!");
     abrirDash();
 }
 
+async function syncCloud() {
+    alert("Sincronizando com a nuvem... Aguarde.");
+    try {
+        const response = await fetch(URL_API);
+        const cloudData = await response.json();
+        
+        // Transformar dados da planilha em JSON do App
+        const parsed = cloudData.slice(1).map(row => ({
+            id: row[10], setor: row[1], auditor: row[3], data: row[9],
+            respostas: JSON.parse(row[11] || "[]")
+        }));
+
+        // Mesclar sem duplicar IDs
+        const existingIds = new Set(db.map(a => a.id));
+        parsed.forEach(item => {
+            if(!existingIds.has(item.id)) db.push(item);
+        });
+
+        localStorage.setItem("j2m_db", JSON.stringify(db));
+        alert("Sincronização concluída! Dados atualizados.");
+        abrirDash();
+    } catch(e) {
+        alert("Erro na conexão. Verifique a internet e o link do Apps Script.");
+    }
+}
+
 function abrirDash() {
-    const f = document.getElementById('f_setor');
-    f.innerHTML = '<option value="T">Todos os Setores</option>';
-    [...new Set(db.map(x=>x.setor))].forEach(s => f.innerHTML += `<option value="${s}">${s}</option>`);
-    renderRelatorio();
+    const fSetor = document.getElementById('f_setor');
+    fSetor.innerHTML = '<option value="ALL">Todos os Setores</option>';
+    const setores = [...new Set(db.map(a => a.setor))];
+    setores.forEach(s => fSetor.innerHTML += `<option value="${s}">${s}</option>`);
+    
+    renderDash();
     show('scr_dash');
 }
 
-function renderRelatorio() {
-    if(!db.length) return;
-    const fs = document.getElementById('f_setor').value;
-    const fm = document.getElementById('f_mes').value;
-    const fa = document.getElementById('f_ano').value;
-
-    const filtrados = db.filter(a => {
-        const d = new Date(a.data + "T00:00:00");
-        return (fs === "T" || a.setor === fs) && (fm === "T" || d.getMonth() == fm) && (d.getFullYear() == fa);
+function renderDash() {
+    const filterS = document.getElementById('f_setor').value;
+    const filterM = document.getElementById('f_mes').value;
+    
+    const dados = db.filter(a => {
+        const dataA = new Date(a.data + "T00:00:00");
+        const matchS = filterS === "ALL" || a.setor === filterS;
+        const matchM = filterM === "ALL" || dataA.getMonth() == filterM;
+        return matchS && matchM;
     });
 
-    if(!filtrados.length) { document.getElementById('relatorio_final').innerHTML = "<h4>Nenhum dado encontrado para este filtro.</h4>"; return; }
-    
-    const ult = filtrados[filtrados.length-1];
+    if(dados.length === 0) return;
+    const ult = dados[dados.length - 1];
 
-    // KPIs
+    // Média Geral
     document.getElementById('k_total').innerText = db.length;
-    let somaF = db.reduce((acc, a) => acc + (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5), 0);
-    document.getElementById('k_media').innerText = (somaF/db.length).toFixed(1);
+    let somaT = db.reduce((acc, a) => acc + (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5), 0);
+    document.getElementById('k_media').innerText = (somaT / db.length || 0).toFixed(1);
 
-    // Radar
-    if(rChart) rChart.destroy();
-    const mediaFabrica = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + Number(a.respostas[i].media), 0) / db.length).toFixed(1));
-    rChart = new Chart(document.getElementById('chartRadar'), {
+    // RADAR
+    if(radarObj) radarObj.destroy();
+    const mediaGeralSensos = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + Number(a.respostas[i]?.media || 0), 0) / db.length).toFixed(1));
+
+    radarObj = new Chart(document.getElementById('radarSetor'), {
         type: 'radar',
         data: {
-            labels: ["Utilização", "Ordenação", "Limpeza", "Saúde", "Disciplina"],
+            labels: ["Seleção", "Ordenação", "Limpeza", "Saúde", "Disciplina"],
             datasets: [
                 { label: ult.setor, data: ult.respostas.map(r=>r.media), borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.2)' },
-                { label: 'Média Fábrica', data: mediaFabrica, borderColor: '#007bff', fill: false, borderDash:[5,5] },
-                { label: 'Meta (8.0)', data: [8,8,8,8,8], borderColor: '#28a745', fill: false, borderDash:[2,2], pointRadius: 0 }
+                { label: 'Média Fábrica', data: mediaGeralSensos, borderColor: '#007bff', fill: false, borderDash: [5,5] },
+                { label: 'Meta (8.0)', data: [8,8,8,8,8], borderColor: '#28a745', fill: false, borderDash: [2,2], pointRadius: 0 }
             ]
         },
-        options: { scales: { r: { min:0, max:10 } } }
+        options: { scales: { r: { min: 0, max: 10 } } }
     });
 
-    // Barra
-    if(bChart) bChart.destroy();
-    const sets = [...new Set(db.map(d=>d.setor))];
-    const nts = sets.map(s => (db.filter(x=>x.setor===s).reduce((acc, a) => acc + (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5), 0) / db.filter(x=>x.setor===s).length).toFixed(1));
-    bChart = new Chart(document.getElementById('chartBarra'), {
+    // BARRA RANKING
+    if(barraObj) barraObj.destroy();
+    const setoresRanking = [...new Set(db.map(d=>d.setor))];
+    const notasRanking = setoresRanking.map(s => {
+        const dSetor = db.filter(x=>x.setor===s);
+        return (dSetor.reduce((acc, a) => acc + (a.respostas.reduce((s,r)=>s+Number(r.media),0)/5), 0) / dSetor.length).toFixed(1);
+    });
+
+    barraObj = new Chart(document.getElementById('barraRanking'), {
         type: 'bar',
-        data: { labels: sets, datasets: [{ label: 'Nota Final', data: nts, backgroundColor: '#5d5a51' }] },
-        options: { plugins: { datalabels: { display: true, anchor: 'end', align: 'top' } } }
+        data: { labels: setoresRanking, datasets: [{ label: 'Nota 5S', data: notasRanking, backgroundColor: '#5d5a51' }] },
+        options: { plugins: { datalabels: { display: true, anchor: 'top', align: 'top' } } }
     });
 
-    // Tabela Relatório
-    let h = `<h3>Detalhamento: ${ult.setor} | Data: ${ult.data}</h3><table class="tabela">
-             <tr><th>Senso</th><th>Nota</th><th>Evidências / Plano de Ação</th></tr>`;
+    // LISTAGEM RELATÓRIO
+    let html = `<h2>Relatório Detalhado: ${ult.setor}</h2><p>Data: ${ult.data} | Auditor: ${ult.auditor}</p>
+                <table style="width:100%; border-collapse: collapse; margin-top:20px;">
+                <tr style="background:#eee;"><th style="padding:10px; border:1px solid #ddd;">SENSO</th><th style="padding:10px; border:1px solid #ddd;">NOTA</th><th style="padding:10px; border:1px solid #ddd;">DETALHES</th></tr>`;
+    
     ult.respostas.forEach((r, i) => {
-        h += `<tr><td>${estrutura[i].s}</td><td><b style="font-size:16px">${r.media}</b></td>
-              <td><i>Evidências:</i> ${r.evid || 'Nenhuma observação.'}
-              ${r.plano ? '<div class="plano-box"><b>PLANO DE AÇÃO:</b> '+r.plano+'</div>' : ''}</td></tr>`;
+        html += `<tr>
+            <td style="padding:10px; border:1px solid #ddd;"><b>${checklist[i].s}</b></td>
+            <td style="padding:10px; border:1px solid #ddd; text-align:center;">${r.media}</td>
+            <td style="padding:10px; border:1px solid #ddd;">
+                <i>Evidência:</i> ${r.evid || 'Sem observações.'}
+                ${r.plano ? `<div class="plano-acao-relatorio"><b>PLANO DE AÇÃO:</b> ${r.plano}</div>` : ''}
+            </td>
+        </tr>`;
     });
-    document.getElementById('relatorio_final').innerHTML = h + "</table>";
+    html += `</table>`;
+    document.getElementById('relatorio_detalhado').innerHTML = html;
 }
 
-function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-async function sincronizar() {
-    alert("Sincronizando dados...");
-    try {
-        const r = await fetch(SCRIPT_URL);
-        const data = await r.json();
-        db = data.slice(1).map(row => ({ id: row[10], setor: row[1], auditor: row[3], data: row[9], respostas: JSON.parse(row[11]) }));
-        localStorage.setItem("j2m_db", JSON.stringify(db));
-        abrirDash();
-    } catch(e) { alert("Erro de conexão com a planilha."); }
+function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 </script>
 </body>
