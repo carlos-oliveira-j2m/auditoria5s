@@ -2,38 +2,36 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Auditoria 5S J2M - v1.2025 Lean</title>
+<title>Auditoria 5S J2M - Executivo v4.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
 <style>
 :root { --primary: #f06639; --secondary: #3d3d3d; --meta: #28a745; --danger: #dc3545; }
 *{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
 body { margin:0; background:#f4f4f4; color:#333; }
 
-/* Interface */
 header { background:var(--secondary); color:white; padding:15px; text-align:center; border-bottom:5px solid var(--primary); font-weight:bold; }
 .screen { display:none; padding:20px; max-width:1000px; margin:auto; }
 .active { display:block; }
 .card { background:white; padding:20px; border-radius:8px; margin-bottom:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
 
-/* Form */
+/* Form e Botões */
 select, input, textarea { width:100%; padding:12px; border-radius:4px; border:1px solid #ccc; margin-bottom:10px; font-size:16px; }
-.btn-p { background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:4px; cursor:pointer; font-weight:bold; }
-.btn-s { background:var(--secondary); color:white; border:none; padding:10px; width:100%; border-radius:4px; cursor:pointer; margin-top:5px; }
+.btn-p { background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom:5px; }
+.btn-s { background:var(--secondary); color:white; border:none; padding:10px; width:100%; border-radius:4px; cursor:pointer; margin-bottom:5px; }
+.btn-edit { background: #ffc107; color: black; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; }
+.btn-del { background: var(--danger); color: white; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; }
 
-/* Relatório e Folha de Rosto */
-.folha-rosto { text-align:center; padding:40px; border:2px solid #333; margin-bottom:30px; background:white; }
-.nota-final { font-size: 72px; font-weight: bold; color: var(--primary); margin: 20px 0; }
-.tabela-acoes { width:100%; border-collapse:collapse; margin-top:20px; }
-.tabela-acoes th, .tabela-acoes td { border:1px solid #ddd; padding:12px; text-align:left; }
-.tabela-acoes th { background:#f8f9fa; }
+/* Relatório Estilizado */
+.folha-rosto { text-align:center; padding:40px; border:2px solid #333; height: 950px; background:white; position: relative; }
+.nota-final { font-size: 90px; font-weight: bold; color: var(--primary); margin: 30px 0; }
+.table-rep { width:100%; border-collapse:collapse; margin-top:15px; }
+.table-rep th, .table-rep td { border:1px solid #ddd; padding:12px; text-align:left; font-size: 14px; }
+.page-break { page-break-before: always; padding-top: 20px; min-height: 950px; background: white; border: 2px solid #333; padding: 20px; }
 
 @media print {
     .no-print { display:none!important; }
     .screen { display:block!important; padding:0; }
-    .page-break { page-break-before: always; }
     body { background:white; }
     .card { box-shadow:none; border:none; }
 }
@@ -41,11 +39,11 @@ select, input, textarea { width:100%; padding:12px; border-radius:4px; border:1p
 </head>
 <body>
 
-<header class="no-print">AUDITORIA 5S J2M - LEAN MANUFACTURING</header>
+<header class="no-print">AUDITORIA 5S J2M - RELATÓRIO EXECUTIVO</header>
 
 <div id="scr_home" class="screen active">
     <div class="card">
-        <h3>Identificação da Auditoria</h3>
+        <h3>Nova Auditoria / Editar</h3>
         <label>Setor:</label>
         <select id="setor">
             <option value="">-- SELECIONE --</option>
@@ -60,9 +58,13 @@ select, input, textarea { width:100%; padding:12px; border-radius:4px; border:1p
         </select>
         <label>Auditor:</label><input type="text" id="auditor">
         <label>Data:</label><input type="date" id="data">
-        <button class="btn-p" onclick="iniciar()">INICIAR AUDITORIA</button>
-        <button class="btn-s" onclick="sincronizar()">SINCRONIZAR NUVEM</button>
-        <button class="btn-s" onclick="abrirDash()">RELATÓRIOS E FILTROS</button>
+        <button class="btn-p" onclick="iniciar()">INICIAR AVALIAÇÃO</button>
+        <button class="btn-s" onclick="abrirDash()">DASHBOARD E HISTÓRICO</button>
+    </div>
+    
+    <div class="card no-print">
+        <h3>Auditorias Recentes</h3>
+        <div id="lista_recentes"></div>
     </div>
 </div>
 
@@ -72,164 +74,184 @@ select, input, textarea { width:100%; padding:12px; border-radius:4px; border:1p
 
 <div id="scr_dash" class="screen">
     <div class="no-print card">
-        <h3>Filtros de Relatório</h3>
+        <h3>Filtros de Exportação</h3>
         <div style="display:flex; gap:10px">
             <select id="f_setor" onchange="renderRelatorio()"></select>
             <select id="f_mes" onchange="renderRelatorio()">
-                <option value="ALL">Mês (Todos)</option>
+                <option value="ALL">Meses (Todos)</option>
                 <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
-                <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
             </select>
         </div>
-        <button class="btn-p" onclick="window.print()">GERAR PDF / IMPRIMIR</button>
+        <button class="btn-p" onclick="window.print()">IMPRIMIR RELATÓRIO (2 PÁGS)</button>
         <button class="btn-s" onclick="location.reload()">VOLTAR</button>
     </div>
 
-    <div id="area_relatorio">
-        </div>
+    <div id="area_impressao"></div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzcntNB7ErwLkye0Y7kAoqneoeMAs_MMe7YvszVdHGrHJUGacpixxAYV9LDppBlUoNx/exec";
-
 const sensos = [
-    { n: "1 - SELEÇÃO", q: ["Itens necessários?", "Obsoletos descartados?", "Ferramentas em excesso?", "Gestão à vista?", "Avisos atuais?"] },
-    { n: "2 - ORDENAÇÃO", q: ["Paletes demarcados?", "Sinalização visível?", "Prateleiras idêntificadas?", "Ferramentas no lugar?", "Documentos organizados?"] },
-    { n: "3 - LIMPEZA", q: ["Piso limpo?", "Máquinas sem vazamentos?", "Lixeiras corretas?", "Iluminação limpa?", "Fontes de sujeira?"] },
-    { n: "4 - PADRONIZAÇÃO", q: ["Uso de EPIs?", "Quadros organizados?", "Extintores livres?", "Áreas comuns?", "Cores padrões?", "Ações anteriores?"] },
-    { n: "5 - DISCIPLINA", q: ["Checklist diário?", "Conhece Política?", "Mantém padrão?", "Melhorias feitas?", "Organização turnos?"] }
+    { n: "1 - SELEÇÃO", q: ["Equipamentos necessários?", "Itens duplicados?", "Acondicionamento correto?", "Checklists disponíveis?", "Avisos atuais?"] },
+    { n: "2 - ORDENAÇÃO", q: ["Demarcação paletes?", "Sinalização visível?", "Identificação prateleiras?", "Retorno ao lugar?", "Arquivos/Documentos?"] },
+    { n: "3 - LIMPEZA", q: ["Piso/Lixo?", "Máquinas/Vazamentos?", "Lixeiras/Sacos?", "Iluminação?", "Fontes sujeira?"] },
+    { n: "4 - PADRONIZAÇÃO", q: ["EPIs?", "Gestão Visual?", "Extintores?", "Higiene comum?", "Cores padrões?", "Ações anteriores?"] },
+    { n: "5 - DISCIPLINA", q: ["Autoavaliação?", "Política Qualidade?", "Manutenção padrões?", "Melhorias?", "Limpeza turnos?"] }
 ];
 
 let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-let audit = {}, step = 0;
+let audit = {}, step = 0, editIdx = -1;
 
 function iniciar() {
-    if(!document.getElementById('setor').value) return alert("Selecione o setor");
-    audit = { 
-        id: Date.now(), 
-        setor: document.getElementById('setor').value, 
-        auditor: document.getElementById('auditor').value, 
-        data: document.getElementById('data').value, 
-        respostas: [] 
-    };
+    const s = document.getElementById('setor').value;
+    if(!s) return alert("Selecione o setor");
+    if(editIdx === -1) {
+        audit = { id: Date.now(), setor: s, auditor: document.getElementById('auditor').value, data: document.getElementById('data').value, respostas: [] };
+    }
     step = 0; renderPasso();
 }
 
 function renderPasso() {
     const s = sensos[step];
     let h = `<div class="card"><h2>${s.n}</h2>`;
-    s.q.forEach((pergunta, i) => {
-        h += `<div style="margin-bottom:15px"><strong>${pergunta}</strong>
-              <select class="nota-sel"><option value="">-- NOTA (Evidências) --</option>
-              <option value="10">10 (Excelente - 0 evidências)</option>
-              <option value="8">8 (Bom - 1 evidência)</option>
-              <option value="6">6 (Média - 2 evidências)</option>
-              <option value="4">4 (Ruim - 3 evidências)</option>
-              <option value="2">2 (Crítico - 4+ evidências)</option></select></div>`;
+    s.q.forEach((q, i) => {
+        const valAnterior = (audit.respostas[step] && audit.respostas[step].notas) ? audit.respostas[step].notas[i] : "";
+        h += `<div style="margin-bottom:12px"><strong>${q}</strong>
+              <select class="nota-sel">
+                <option value="">-- Nota --</option>
+                ${[10,8,6,4,2].map(v => `<option value="${v}" ${valAnterior == v ? 'selected' : ''}>${v}</option>`).join('')}
+              </select></div>`;
     });
-    h += `<label>Plano de Ação (Obrigatório se Média < 6.0):</label>
-          <textarea id="plano" placeholder="O que será feito?"></textarea>
-          <button class="btn-p" onclick="salvarPasso()">PRÓXIMO</button></div>`;
+    h += `<label>Plano de Ação Corretiva:</label>
+          <textarea id="plano" rows="3">${audit.respostas[step]?.plano || ""}</textarea>
+          <button class="btn-p" onclick="salvarPasso()">GRAVAR SENSO</button></div>`;
     document.getElementById('box_perguntas').innerHTML = h;
     show('scr_audit');
 }
 
 function salvarPasso() {
     const notas = Array.from(document.querySelectorAll('.nota-sel')).map(s => Number(s.value));
-    if(notas.includes(0)) return alert("Preencha todas as notas!");
+    if(notas.includes(0)) return alert("Dê nota a todos os itens!");
     
     const media = (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(1);
     const plano = document.getElementById('plano').value.trim();
-    
-    if(media < 6 && plano.length < 5) return alert("Média baixa exige Plano de Ação!");
 
-    audit.respostas.push({ media, plano });
+    audit.respostas[step] = { media, plano, notas };
     step++;
+    
     if(step < sensos.length) renderPasso();
     else {
-        db.push(audit);
+        if(editIdx > -1) db[editIdx] = audit; else db.push(audit);
         localStorage.setItem("j2m_db", JSON.stringify(db));
-        fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
+        editIdx = -1;
+        alert("Salvo com sucesso!");
         abrirDash();
     }
 }
 
 function abrirDash() {
     const f = document.getElementById('f_setor');
-    f.innerHTML = '<option value="ALL">Setor (Todos)</option>';
+    f.innerHTML = '<option value="ALL">Todos os Setores</option>';
     [...new Set(db.map(x=>x.setor))].forEach(s => f.innerHTML += `<option value="${s}">${s}</option>`);
     renderRelatorio();
+    renderListaHome();
     show('scr_dash');
+}
+
+function renderListaHome() {
+    let h = "";
+    db.slice().reverse().forEach((a, idx) => {
+        const realIdx = db.length - 1 - idx;
+        h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:8px 0;">
+                <span>${a.data} - ${a.setor}</span>
+                <div>
+                    <button class="btn-edit" onclick="editarAuditoria(${realIdx})">✎</button>
+                    <button class="btn-del" onclick="excluirAuditoria(${realIdx})">X</button>
+                </div>
+              </div>`;
+    });
+    document.getElementById('lista_recentes').innerHTML = h;
+}
+
+function editarAuditoria(idx) {
+    editIdx = idx;
+    audit = JSON.parse(JSON.stringify(db[idx]));
+    document.getElementById('setor').value = audit.setor;
+    document.getElementById('auditor').value = audit.auditor;
+    document.getElementById('data').value = audit.data;
+    iniciar();
+}
+
+function excluirAuditoria(idx) {
+    if(confirm("Excluir este relatório permanentemente?")) {
+        db.splice(idx, 1);
+        localStorage.setItem("j2m_db", JSON.stringify(db));
+        renderListaHome();
+        if(document.getElementById('scr_dash').classList.contains('active')) abrirDash();
+    }
 }
 
 function renderRelatorio() {
     const selS = document.getElementById('f_setor').value;
     const selM = document.getElementById('f_mes').value;
-    
     const filtrados = db.filter(a => {
         const d = new Date(a.data + "T00:00:00");
         return (selS === "ALL" || a.setor === selS) && (selM === "ALL" || d.getMonth() == selM);
     });
 
-    const area = document.getElementById('area_relatorio');
-    if(!filtrados.length) { area.innerHTML = "<h3>Sem dados para este filtro.</h3>"; return; }
+    const area = document.getElementById('area_impressao');
+    if(!filtrados.length) { area.innerHTML = "<h3>Nenhum relatório encontrado.</h3>"; return; }
     
     const ult = filtrados[filtrados.length-1];
     const notaFinal = (ult.respostas.reduce((a,b)=>a+Number(b.media),0)/5).toFixed(1);
 
-    // FOLHA DE ROSTO
-    let html = `
+    area.innerHTML = `
     <div class="folha-rosto">
-        <img src="https://j2m.com.br/wp-content/uploads/2021/08/logo-j2m.png" style="width:150px; margin-bottom:20px">
+        <h2 style="color:var(--primary)">J2M - EXCELÊNCIA OPERACIONAL</h2>
+        <hr>
         <h1>RELATÓRIO DE AUDITORIA 5S</h1>
-        <div style="font-size:20px; margin-bottom:10px">SETOR: <strong>${ult.setor}</strong></div>
+        <div style="margin-top:40px; font-size:22px">SETOR: <strong>${ult.setor}</strong></div>
         <div style="font-size:18px">DATA: ${ult.data} | AUDITOR: ${ult.auditor}</div>
         <div class="nota-final">${notaFinal}</div>
-        <div style="width:100%; max-width:500px; margin:auto">
-            <canvas id="radarPrint"></canvas>
-        </div>
+        <div style="width:450px; margin:auto"><canvas id="radarRep"></canvas></div>
+        <div style="position:absolute; bottom:40px; width:100%; text-align:center; font-size:12px">Meta de Pontuação: 8.0</div>
     </div>
-    <div class="page-break card">
-        <h3>PLANO DE AÇÃO POR SENSO</h3>
-        <table class="tabela-acoes">
-            <tr><th>Senso</th><th>Nota</th><th>Plano de Ação Corretiva</th></tr>`;
+    
+    <div class="page-break">
+        <h3>COMPARAÇÃO DE NOTAS ENTRE SETORES</h3>
+        <div style="height:300px"><canvas id="barraRep"></canvas></div>
+        
+        <h3 style="margin-top:40px">PLANOS DE AÇÃO CORRETIVA</h3>
+        <table class="table-rep">
+            <tr style="background:#eee"><th>Senso</th><th>Nota</th><th>Ação Necessária</th></tr>
+            ${ult.respostas.map((r, i) => r.plano ? `<tr><td>${sensos[i].n}</td><td>${r.media}</td><td>${r.plano}</td></tr>` : '').join('')}
+        </table>
+    </div>`;
 
-    ult.respostas.forEach((r, i) => {
-        if(r.plano) {
-            html += `<tr><td>${sensos[i].n}</td><td>${r.media}</td><td>${r.plano}</td></tr>`;
-        }
-    });
-
-    area.innerHTML = html + `</table></div>`;
-
-    // Gerar Radar do Relatório
     setTimeout(() => {
-        new Chart(document.getElementById('radarPrint'), {
+        new Chart(document.getElementById('radarRep'), {
             type: 'radar',
             data: {
                 labels: ["Seleção", "Ordenação", "Limpeza", "Saúde", "Disciplina"],
-                datasets: [
-                    { label: ult.setor, data: ult.respostas.map(r=>r.media), borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.2)' },
-                    { label: 'Meta (8.0)', data: [8,8,8,8,8], borderColor: '#28a745', borderDash: [5,5], fill: false, pointRadius:0 }
-                ]
+                datasets: [{ label: ult.setor, data: ult.respostas.map(r=>r.media), borderColor: '#f06639', backgroundColor: 'rgba(240,102,57,0.2)' },
+                           { label: 'Meta', data: [8,8,8,8,8], borderColor: '#28a745', borderDash:[5,5], fill:false }]
             },
-            options: { scales: { r: { min:0, max:10 } }, plugins: { legend: { position: 'bottom' } } }
+            options: { scales: { r: { min:0, max:10 } } }
         });
-    }, 100);
+
+        const setores = [...new Set(db.map(d=>d.setor))];
+        const notas = setores.map(s => {
+            const d = db.filter(x=>x.setor===s);
+            return (d.reduce((acc, a) => acc + (a.respostas.reduce((x,y)=>x+Number(y.media),0)/5), 0) / d.length).toFixed(1);
+        });
+
+        new Chart(document.getElementById('barraRep'), {
+            type: 'bar',
+            data: { labels: setores, datasets: [{ label: 'Média por Setor', data: notas, backgroundColor: '#5d5a51' }] },
+            options: { maintainAspectRatio: false, scales: { y: { min:0, max:10 } } }
+        });
+    }, 150);
 }
 
 function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-async function sincronizar() {
-    alert("Buscando dados na nuvem...");
-    try {
-        const r = await fetch(API);
-        const data = await r.json();
-        db = data.slice(1).map(row => ({ id: row[10], setor: row[1], auditor: row[3], data: row[9], respostas: JSON.parse(row[11]) }));
-        localStorage.setItem("j2m_db", JSON.stringify(db));
-        abrirDash();
-    } catch(e) { alert("Erro de sincronização."); }
-}
+renderListaHome();
 </script>
-</body>
-</html>
