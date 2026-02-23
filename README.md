@@ -23,6 +23,7 @@ header { background: var(--secondary); padding: 15px; text-align: center; border
 .screen { display:none; padding:20px; max-width: 1150px; margin: 10px auto; position: relative; }
 .active { display:block; animation: fadeIn 0.4s; }
 
+/* Estilos de Filtros e Cards */
 .filter-bar { display: flex; gap: 10px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .filter-item { flex: 1; min-width: 140px; }
 .filter-item label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; color: var(--secondary); }
@@ -34,11 +35,9 @@ header { background: var(--secondary); padding: 15px; text-align: center; border
 .card { background: rgba(255,255,255,0.95); padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
 button { border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; transition: 0.2s; }
-.btn-primary { background: var(--primary); width: 100%; margin-bottom: 5px; }
-.btn-secondary { background: var(--secondary); width: 100%; margin-bottom: 5px; }
-.btn-blue { background: var(--blue); width: 100%; margin-bottom: 5px; }
-.btn-danger { background: #dc3545; font-size: 10px; padding: 5px 10px; }
-.btn-edit { background: #ffc107; color: #000; font-size: 10px; padding: 5px 10px; margin-right: 5px; }
+.btn-primary { background: var(--primary); width: 100%; margin-bottom: 8px; }
+.btn-secondary { background: var(--secondary); width: 100%; margin-bottom: 8px; }
+.btn-blue { background: var(--blue); width: 100%; margin-bottom: 8px; }
 
 select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; background: white; margin-bottom: 10px; }
 
@@ -64,8 +63,8 @@ select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border
             <div><label>Data:</label><input type="date" id="data"></div>
         </div><br>
         <button class="btn-primary" onclick="start()">Iniciar Avaliação</button>
-        <button class="btn-blue" onclick="puxarDaNuvem()">Sincronizar Celular / PC</button>
-        <button class="btn-secondary" onclick="openDashboard()">Dashboard / Histórico</button>
+        <button class="btn-blue" onclick="puxarDados()">Sincronizar Celular / PC</button>
+        <button class="btn-secondary" onclick="openDashboard()">Ver Histórico / Dashboard</button>
     </div>
 </div>
 
@@ -99,7 +98,7 @@ select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border
         <div class="kpi-card"><h2 id="totalAuditorias">0</h2><p>Total de Auditorias</p></div>
     </div>
 
-    <div id="areaGraficos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 40px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 40px;">
         <div style="background:white; padding:10px; border-radius:8px;"><canvas id="cRadar"></canvas></div>
         <div style="background:white; padding:10px; border-radius:8px;"><canvas id="cBarra"></canvas></div>
     </div>
@@ -110,9 +109,10 @@ select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border
 <script>
 Chart.register(ChartDataLabels);
 
-const API_GOOGLE = "https://script.google.com/macros/s/AKfycbwPjqUwMg-YiCxlMhBujpMDUZZqZ_mZFFRIwyXUkojM40H_IaIjSr6utfevshUg5WFv/exec";
+// SEU LINK ATUALIZADO
+const API_GOOGLE = "https://script.google.com/macros/s/AKfycbzcntNB7ErwLkye0Y7kAoqneoeMAs_MMe7YvszVdHGrHJUGacpixxAYV9LDppBlUoNx/exec";
 
-// --- Imagens de Fundo ---
+// Imagens de fundo dinâmicas
 const imagensFundo = [
     "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=1920",
     "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1920",
@@ -126,11 +126,7 @@ function mudarFundo() {
 }
 setInterval(mudarFundo, 10000); mudarFundo();
 
-// --- Lógica Principal ---
-let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-let audit = {}, sensoIndex = 0, editandoId = null;
-let chartRadar, chartBar;
-
+// Checklist Original
 const checklist = [
     { s: "Seleção", p: ["Ferramentas necessárias?", "Itens desnecessários?", "Acondicionamento?", "Documentos atuais?", "Área limpa de sucatas?"] },
     { s: "Ordenação", p: ["Piso demarcado?", "Corredores livres?", "Prateleiras identificadas?", "Limpeza organizada?", "Objetos pessoais guardados?"] },
@@ -139,12 +135,9 @@ const checklist = [
     { s: "Disciplina", p: ["Padrões 5S mantidos?", "Autoavaliação feita?", "Quadro de gestão OK?", "Ações anteriores resolvidas?"] }
 ];
 
-function resetForm() {
-    editandoId = null;
-    document.getElementById('tituloHome').innerText = "Identificação da Auditoria";
-    document.getElementById('setor').value = "";
-    show('home');
-}
+let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
+let audit = {}, sensoIndex = 0, editandoId = null;
+let chartRadar, chartBar;
 
 function start() {
     if(!document.getElementById('setor').value) return alert("Informe o Setor");
@@ -164,14 +157,14 @@ function start() {
 function renderSenso() {
     const s = checklist[sensoIndex];
     let h = `<div class="card"><h2>${sensoIndex+1}º Senso: ${s.s}</h2>`;
-    s.p.forEach((p, i) => {
+    s.p.forEach((p) => {
         h += `<label>${p}</label><select class="nota-q">
-            <option value="10">10 - Excelente</option><option value="8">8 - Bom</option>
-            <option value="6">6 - Regular</option><option value="4">4 - Ruim</option><option value="2">2 - Crítico</option>
+            <option value="10">10 (Excelente)</option><option value="8">8 (Bom)</option>
+            <option value="6">6 (Médio)</option><option value="4">4 (Melhorar)</option><option value="2">2 (Crítico)</option>
         </select>`;
     });
     h += `<label>Plano de Ação:</label><textarea id="txtPlano"></textarea>
-          <button class="btn-primary" onclick="salvarSenso()">Salvar e Próximo</button></div>`;
+          <button class="btn-primary" onclick="salvarSenso()">CONTINUAR</button></div>`;
     document.getElementById('senso').innerHTML = h;
     show('senso');
 }
@@ -187,36 +180,31 @@ function salvarSenso() {
 }
 
 function finalizar() {
-    if(editandoId) {
-        const idx = db.findIndex(x => x.id === editandoId);
-        db[idx] = audit;
-    } else {
-        db.push(audit);
-    }
+    db.push(audit);
     localStorage.setItem("j2m_db", JSON.stringify(db));
     
-    // ENVIAR PARA GOOGLE
+    // Envio para o Google Sheets
     fetch(API_GOOGLE, { method: 'POST', mode: 'no-cors', body: JSON.stringify(audit) });
     
-    alert("Auditoria Finalizada com Sucesso!");
+    alert("Auditoria Concluída e Sincronizada!");
     openDashboard();
 }
 
-async function puxarDaNuvem() {
-    alert("Sincronizando...");
+async function puxarDados() {
+    alert("Sincronizando com a Nuvem...");
     try {
-        const r = await fetch(API_GOOGLE);
-        const data = await r.json();
+        const res = await fetch(API_GOOGLE);
+        const data = await res.json();
         if(data.length > 1) {
             db = data.slice(1).map(row => ({
-                id: row[10], setor: row[1], auditor: row[3], responsavel: row[2], data: row[9],
+                id: row[10], setor: row[1], responsavel: row[2], auditor: row[3], data: row[9],
                 respostas: JSON.parse(row[11])
             }));
             localStorage.setItem("j2m_db", JSON.stringify(db));
-            alert("Dados Atualizados!");
+            alert("Sincronização concluída!");
             openDashboard();
         }
-    } catch(e) { alert("Erro ao conectar."); }
+    } catch(e) { alert("Erro ao buscar dados da nuvem."); }
 }
 
 function openDashboard() {
@@ -243,14 +231,10 @@ function renderRelatorio() {
     document.getElementById("mediaGeralFabrica").innerText = filtrados.length > 0 ? (somaTotal / filtrados.length).toFixed(1) : "0.0";
     document.getElementById("totalAuditorias").innerText = filtrados.length;
 
-    let html = "<h3>Histórico de Auditorias</h3><table class='tabela-pdf'><tr><th>Data</th><th>Setor</th><th>Nota</th><th class='no-print'>Ações</th></tr>";
+    let html = "<h3>Histórico</h3><table class='tabela-pdf'><tr><th>Data</th><th>Setor</th><th>Nota</th></tr>";
     filtrados.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(a => {
         const notaF = (a.respostas.reduce((acc,r)=>acc+Number(r.media),0)/5).toFixed(1);
-        html += `<tr><td>${a.data}</td><td>${a.setor}</td><td><b>${notaF}</b></td>
-        <td class='no-print'>
-            <button class='btn-edit' onclick='prepararEdicao(${a.id})'>Editar</button>
-            <button class='btn-danger' onclick='excluirAuditoria(${a.id})'>Excluir</button>
-        </td></tr>`;
+        html += `<tr><td>${a.data}</td><td>${a.setor}</td><td><b>${notaF}</b></td></tr>`;
     });
     html += "</table>";
     document.getElementById("relatorioView").innerHTML = html;
@@ -262,17 +246,12 @@ function atualizarGraficos(dados) {
     if(dados.length === 0) return;
 
     const mSensos = [0,1,2,3,4].map(i => (dados.reduce((acc, a) => acc + Number(a.respostas[i].media), 0) / dados.length).toFixed(1));
-    const mGeral = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + Number(a.respostas[i].media), 0) / db.length).toFixed(1));
 
     chartRadar = new Chart(document.getElementById('cRadar'), {
         type: 'radar',
         data: {
             labels: ["Seleção", "Ordenação", "Limpeza", "Padronização", "Disciplina"],
-            datasets: [
-                { label: 'Filtro Atual', data: mSensos, backgroundColor: 'rgba(240,102,57,0.2)', borderColor: '#f06639', pointRadius: 4 },
-                { label: 'Média Fábrica (Histórica)', data: mGeral, borderColor: '#007bff', borderDash: [5,5], fill: false },
-                { label: 'Meta (8.0)', data: [8,8,8,8,8], borderColor: '#28a745', borderDash: [2,2], fill: false, pointRadius: 0 }
-            ]
+            datasets: [{ label: 'Resultado', data: mSensos, backgroundColor: 'rgba(240,102,57,0.2)', borderColor: '#f06639', pointRadius: 4 }]
         },
         options: { scales: { r: { min: 0, max: 10 } } }
     });
@@ -286,32 +265,12 @@ function atualizarGraficos(dados) {
     chartBar = new Chart(document.getElementById('cBarra'), {
         type: 'bar',
         data: { labels: setores, datasets: [{ label: 'Nota Final', data: notas, backgroundColor: '#5d5a51' }] },
-        options: { scales: { y: { min: 0, max: 10 } }, plugins: { datalabels: { display: true, anchor: 'end', align: 'top' } } }
+        options: { scales: { y: { min: 0, max: 10 } } }
     });
 }
 
-function excluirAuditoria(id) {
-    if(confirm("Deseja excluir?")) {
-        db = db.filter(a => a.id !== id);
-        localStorage.setItem("j2m_db", JSON.stringify(db));
-        renderRelatorio();
-    }
-}
-
-function prepararEdicao(id) {
-    const a = db.find(x => x.id === id);
-    if(a) {
-        editandoId = id; audit = JSON.parse(JSON.stringify(a));
-        document.getElementById('setor').value = a.setor;
-        document.getElementById('auditor').value = a.auditor;
-        document.getElementById('responsavel').value = a.responsavel;
-        document.getElementById('data').value = a.data;
-        show('home');
-        document.getElementById('tituloHome').innerText = "Editando Auditoria";
-    }
-}
-
 function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+function resetForm() { editandoId = null; show('home'); }
 </script>
 </body>
 </html>
