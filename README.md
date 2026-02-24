@@ -53,4 +53,108 @@
             <label class="req">Data:</label><input type="date" id="dt">
             
             <button class="btn-p" onclick="iniciar()">INICIAR AVALIAÇÃO</button>
-            <button class="
+            <button class="btn-s" onclick="alert('Funcionalidade de Relatórios em desenvolvimento local.')">DASHBOARD / RELATÓRIOS</button>
+            <button class="btn-sync" onclick="sincronizar()">🔄 SINCRONIZAR (CELULAR/PC)</button>
+        </div>
+    </div>
+
+    <div id="scr_form" class="screen">
+        <div id="form_content"></div>
+    </div>
+</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYTDUTtW_tA8PgDQ3L5j6NFKlC2soH722nR_7lk_Kazuus8kMwn4-SLk9pG9ANwZ0/exec"; 
+
+const perguntas = [
+    { s: "1- Seleção", q: ["Todas as ferramentas e equipamentos são necessários?","Existem itens duplicados sobre a bancada?","Ferramentas acondicionadas corretamente?","Quadros de gestão e documentos atualizados?","Os avisos e quadros informativos são necessários?"]},
+    { s: "2- Ordenação", q: ["Os locais para paletes e caixas estão marcados?","As linhas e marcações estão claramente visíveis?","Prateleiras e locais de armazenamento identificados?","As gavetas e armários estão identificados?","Ferramentas ordenadas por frequência de uso?"]},
+    { s: "3- Limpeza", q: ["O chão está limpo e livre de detritos?","As máquinas e equipamentos estão conservados?","As fontes de sujeira foram identificadas e tratadas?","Materiais de limpeza estão disponíveis?","As lixeiras estão identificadas e limpas?"]},
+    { s: "4- Padronização", q: ["Funcionários usam uniformes e EPIs corretamente?","Placas de segurança e extintores em bom estado?","A iluminação e ventilação estão adequadas?","Painéis elétricos estão fechados e identificados?","Ambientes de uso comum estão organizados?"]},
+    { s: "5- Autodisciplina", q: ["A gestão mantém os padrões?","Checklist de autoavaliação é realizado?","Missão, visão e valores são conhecidos?","EPI's são usados constantemente como hábito?","Existe padrão de limpeza em gestão à vista?","Ações da Auditoria Anterior foram atendidas?"]}
+];
+
+let db = JSON.parse(localStorage.getItem("db_j2m_5s") || "[]");
+let audit = {};
+let etapa = 0;
+
+function iniciar() {
+    const fields = ['setor', 'resp', 'aud', 'dt'];
+    for (let f of fields) if (!document.getElementById(f).value) return alert("Preencha todos os campos obrigatórios!");
+    
+    audit = { 
+        setor: document.getElementById('setor').value, 
+        auditor: document.getElementById('aud').value, 
+        responsavel: document.getElementById('resp').value,
+        data: document.getElementById('dt').value, 
+        respostas: [] 
+    };
+    etapa = 0;
+    renderEtapa();
+}
+
+function renderEtapa() {
+    const senso = perguntas[etapa];
+    let html = `<div class="card"><h2>${senso.s}</h2>`;
+    senso.q.forEach((q, i) => {
+        html += `<div class="q-row"><span class="q-text">${q}</span>
+            <select class="nota-box" id="n_${i}" required>
+                <option value="">-- NOTA --</option>
+                <option value="10">10 - Excelente</option>
+                <option value="6">6 - Regular</option>
+                <option value="2">2 - Crítico</option>
+            </select></div>`;
+    });
+    html += `<label class="req">Plano de Ação Corretiva / Observações:</label>
+             <textarea id="acao" placeholder="Descreva as melhorias necessárias para este senso..."></textarea>
+             <button class="btn-p" onclick="salvarEtapa()">PRÓXIMO</button></div>`;
+    
+    document.getElementById('form_content').innerHTML = html;
+    document.getElementById('scr_home').classList.remove('active');
+    document.getElementById('scr_form').classList.add('active');
+    window.scrollTo(0,0);
+}
+
+function salvarEtapa() {
+    const notas = [];
+    for(let i=0; i<perguntas[etapa].q.length; i++) {
+        const v = document.getElementById(`n_${i}`).value;
+        if(!v) return alert("Por favor, atribua uma nota para todos os itens!");
+        notas.push(Number(v));
+    }
+    const acao = document.getElementById('acao').value;
+    if(!acao || acao.length < 5) return alert("O Plano de Ação/Observação é obrigatório para garantir a melhoria contínua!");
+
+    audit.respostas[etapa] = { notas, acao };
+    if(etapa < 4) { etapa++; renderEtapa(); } 
+    else { 
+        db.push(audit); 
+        localStorage.setItem("db_j2m_5s", JSON.stringify(db)); 
+        alert("Auditoria salva localmente! Não esqueça de sincronizar.");
+        location.reload();
+    }
+}
+
+async function sincronizar() {
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ ENVIANDO DADOS...";
+    btn.disabled = true;
+
+    try {
+        await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(db)
+        });
+        alert("✅ Sincronização automática realizada com sucesso!");
+    } catch (e) {
+        alert("Erro na conexão. Verifique sua internet.");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
