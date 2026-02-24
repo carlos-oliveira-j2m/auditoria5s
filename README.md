@@ -1,355 +1,211 @@
-/* global M, Chart, jsPDF, QUESTOES_5S, EXPLICACOES_NOTA, SCORES_VALIDOS, LISTA_SETORES, MEDIA_DESEJADA */
-
-// ================== CONFIG ==================
-// URL do seu Web App (Apps Script). Pré-configurada com a que você enviou.
-// Você pode alterar no modal "Sincronização" e o valor fica salvo em localStorage.
-const API_BASE_DEFAULT = 'https://script.google.com/macros/s/AKfycbyJ_kHIIJC3_7mbJTLbZEnEBtnyU1DpxH5aS42HL-VRXAG1KI4AmDUH0ZGIPgkEXXWX/exec';
-
-// Keys de LocalStorage
-const LS_KEYS = {
-  drafts: 'aud5s_drafts',
-  submissions: 'aud5s_submissions',
-  apiBase: 'aud5s_api_base'
-};
-const getApiBase = () => (localStorage.getItem(LS_KEYS.apiBase) || API_BASE_DEFAULT || '').trim();
-
-// ================== STATE ==================
-let radarChart = null;
-let barrasChart = null;
-let CURRENT_DRAFT_META = null; // {id,setor,responsavel,auditor,dataISO}
-
-// ================== UTILS ==================
-const Utils = {
-  byId: (id) => document.getElementById(id),
-  toast: (msg) => M.toast({ html: msg }),
-  fmtDate: (iso) => (iso || '').split('T')[0] || iso,
-  ensureArray: (x) => Array.isArray(x) ? x : [],
-  loadSubmissions() { return JSON.parse(localStorage.getItem(LS_KEYS.submissions) || '[]'); },
-  saveSubmissions(arr) { localStorage.setItem(LS_KEYS.submissions, JSON.stringify(arr || [])); },
-  loadDrafts() { return JSON.parse(localStorage.getItem(LS_KEYS.drafts) || '[]'); },
-  saveDrafts(arr) { localStorage.setItem(LS_KEYS.drafts, JSON.stringify(arr || [])); },
-  round2(n) { return Math.round(n * 100) / 100; }
-};
-
-// ================== NAV ==================
-const Nav = {
-  go(hash) {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    if (hash === '#form') Utils.byId('tela-form').style.display = 'block';
-    else if (hash === '#dash') Utils.byId('tela-dash').style.display = 'block';
-    else Utils.byId('tela-inicio').style.display = 'block';
-    setTimeout(()=> M.updateTextFields(), 50);
-  },
-  init() {
-    window.addEventListener('hashchange', () => Nav.go(location.hash));
-    Nav.go(location.hash || '#inicio');
-  }
-};
-
-// ================== APP (Página Inicial) ==================
-const App = {
-  initInicio() {
-    // Popula setores e filtros
-    const selSetor = Utils.byId('setor');
-    selSetor.innerHTML = '<option value="" disabled selected>Selecione</option>' + LISTA_SETORES.map(s => `<option value="${s}">${s}</option>`).join('');
-    const filtroSetor = Utils.byId('filtroSetor');
-    filtroSetor.innerHTML = '<option value="" selected>Todos</option>' + LISTA_SETORES.map(s => `<option value="${s}">${s}</option>`).join('');
-    M.FormSelect.init(selSetor); M.FormSelect.init(filtroSetor);
-
-    // Botões
-    Utils.byId('btnIniciar').addEventListener('click', () => {
-      const meta = App.getMeta();
-      if (!App.validarMeta(meta)) { Utils.toast('Preencha todos os campos obrigatórios!'); return; }
-      meta.id = 'draft_' + Date.now();
-      CURRENT_DRAFT_META = meta;
-      Form.renderPerguntas(null); // novo
-      location.hash = '#form';
-    });
-
-    // Modais
-    M.Modal.init(document.querySelectorAll('.modal'));
-    // URL API
-    Utils.byId('apiBase').value = getApiBase();
-    Utils.byId('btnSalvarApi').addEventListener('click', () => {
-      const url = (Utils.byId('apiBase').value || '').trim();
-      localStorage.setItem(LS_KEYS.apiBase, url);
-      Utils.toast(url ? 'URL salva.' : 'URL removida. Modo local.');
-    });
-
-    // Sync
-    Utils.byId('btnSyncEnviar').addEventListener('click', Sync.sincronizarUp);
-    Utils.byId('btnSyncBaixar').addEventListener('click', Sync.sincronizarDown);
-  },
-
-  getMeta() {
-    return {
-      setor: Utils.byId('setor').value?.trim(),
-      responsavel: Utils.byId('responsavel').value?.trim(),
-      auditor: Utils.byId('auditor').value?.trim(),
-      dataISO: Utils.byId('dataISO').value?.trim()
-    };
-  },
-
-  validarMeta(m) {
-    return m.setor && m.responsavel && m.auditor && m.dataISO;
-  }
-};
-
-// ================== FORM ==================
-const Form = {
-  // Se idEdit for fornecido, carrega submissão e permite editar
-  renderPerguntas(idEdit) {
-    const container = Utils.byId('formPerguntas');
-    container.innerHTML = '';
-
-    // Se edição: carrega respostas
-    let editData = null;
-    if (idEdit) {
-      const subs = Utils.loadSubmissions();
-      editData = subs.find(x => x.id === idEdit) || null;
-      if (editData) CURRENT_DRAFT_META = editData.meta;
-    }
-
-    QUESTOES_5S.forEach(q => {
-      const card = document.createElement('div'); card.className = 'card pergunta-card';
-      const inner = document.createElement('div'); inner.className = 'card-content';
-
-      const title = document.createElement('span'); title.className = 'card-title'; title.textContent = `${q.id} – ${q.senso}`;
-      inner.appendChild(title);
-
-      const pTxt = document.createElement('p'); pTxt.textContent = q.texto; inner.appendChild(pTxt);
-
-      // notas
-      const notasDiv = document.createElement('div'); notasDiv.style.marginTop = '6px';
-      SCORES_VALIDOS.forEach(sc => {
-        const checked = editData && editData.respostas?.[q.id]?.nota === sc ? 'checked' : '';
-        notasDiv.innerHTML += `
-          <label class="nota-chip">
-            <input name="${q.id}" type="radio" value="${sc}" ${checked} onchange="Form._onNotaChange('${q.id}', ${sc})" />
-            <span>${sc}</span>
-          </label>
-          <span class="obs-text">(${EXPLICACOES_NOTA[sc] || ''})</span><br/>
-        `;
-      });
-      inner.appendChild(notasDiv);
-
-      // evidências
-      const evVal = editData?.respostas?.[q.id]?.evidencia || '';
-      const ev = document.createElement('div'); ev.className = 'input-field';
-      ev.innerHTML = `
-        <textarea id="ev_${q.id}" class="materialize-textarea" placeholder="Descreva evidências (observações, fotos, registros)...">${evVal}</textarea>
-        <label class="active" for="ev_${q.id}">Evidências</label>
-      `;
-      inner.appendChild(ev);
-
-      // ação corretiva
-      const notaVal = editData?.respostas?.[q.id]?.nota || '';
-      const precisa = notaVal !== '' && Number(notaVal) < 6;
-      const acData = editData?.respostas?.[q.id]?.acao || {};
-      const ac = document.createElement('div'); ac.id = `acao_${q.id}`; ac.className = 'acao-box';
-      ac.style.display = precisa ? 'block' : 'none';
-      ac.innerHTML = `
-        <strong>Ação corretiva (obrigatória pois a nota &lt; 6):</strong>
-        <div class="row" style="margin-bottom:0;">
-          <div class="input-field col s12">
-            <input id="ac_desc_${q.id}" type="text" value="${acData.descricao || ''}">
-            <label class="active" for="ac_desc_${q.id}">Descrição da ação</label>
-          </div>
-          <div class="input-field col s12 m6">
-            <input id="ac_resp_${q.id}" type="text" value="${acData.responsavel || ''}">
-            <label class="active" for="ac_resp_${q.id}">Responsável</label>
-          </div>
-          <div class="input-field col s12 m4">
-            <input id="ac_prazo_${q.id}" type="date" value="${acData.prazoISO || ''}">
-            <label class="active" for="ac_prazo_${q.id}">Prazo</label>
-          </div>
-          <div class="input-field col s12 m2">
-            <select id="ac_status_${q.id}">
-              <option value="Aberta" ${acData.status==='Aberta'?'selected':''}>Aberta</option>
-              <option value="Em andamento" ${acData.status==='Em andamento'?'selected':''}>Em andamento</option>
-              <option value="Concluída" ${acData.status==='Concluída'?'selected':''}>Concluída</option>
-            </select>
-            <label>Status</label>
-          </div>
-        </div>
-      `;
-      inner.appendChild(ac);
-
-      card.appendChild(inner);
-      container.appendChild(card);
-    });
-
-    // Inicializa selects (status)
-    setTimeout(() => M.AutoInit(), 50);
-  },
-
-  _onNotaChange(qid, val) {
-    const ac = Utils.byId(`acao_${qid}`);
-    if (Number(val) < 6) ac.style.display = 'block'; else ac.style.display = 'none';
-  },
-
-  getRespostas() {
-    const respostas = {};
-    QUESTOES_5S.forEach(q => {
-      const sel = document.querySelector(`input[name="${q.id}"]:checked`);
-      const nota = sel ? Number(sel.value) : '';
-      const evidencia = (Utils.byId(`ev_${q.id}`)?.value || '').trim();
-      const precisaAcao = nota !== '' && nota < 6;
-      let acao = null;
-      if (precisaAcao) {
-        acao = {
-          descricao: (Utils.byId(`ac_desc_${q.id}`)?.value || '').trim(),
-          responsavel: (Utils.byId(`ac_resp_${q.id}`)?.value || '').trim(),
-          prazoISO: (Utils.byId(`ac_prazo_${q.id}`)?.value || '').trim(),
-          status: (Utils.byId(`ac_status_${q.id}`)?.value || 'Aberta')
-        };
-      }
-      respostas[q.id] = { nota, evidencia, acao };
-    });
-    return respostas;
-  },
-
-  validarRespostas(resp) {
-    for (const q of QUESTOES_5S) {
-      const r = resp[q.id];
-      if (r.nota === '' || isNaN(r.nota)) { Utils.toast(`Responda a ${q.id}`); return false; }
-      if (Number(r.nota) < 6) {
-        const a = r.acao || {};
-        if (!a.descricao || !a.responsavel || !a.prazoISO) {
-          Utils.toast(`Ação corretiva obrigatória em ${q.id} (nota < 6)`); return false;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>J2M 5S Enterprise - v1.2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #f06639; --dark: #3d3d3d; --bg: #f4f7f6; --danger: #dc3545; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #333; }
+        header { background: var(--dark); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); font-weight: bold; }
+        .container { max-width: 900px; margin: auto; padding: 15px; }
+        .screen { display: none; }
+        .active { display: block; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 5px solid var(--primary); }
+        label { display: block; font-weight: bold; margin: 10px 0 5px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; margin-bottom: 10px; }
+        button { cursor: pointer; border: none; padding: 15px; border-radius: 5px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        .btn-p { background: var(--primary); color: white; }
+        .btn-s { background: var(--dark); color: white; }
+        .btn-sync { background: #007bff; color: white; }
+        .q-row { border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .q-text { flex: 1; font-size: 14px; font-weight: 500; }
+        .nota-box { width: 110px; border: 2px solid var(--primary); font-weight: bold; }
+        .chart-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .chart-box { background: white; padding: 10px; height: 300px; border: 1px solid #ddd; }
+        @media print {
+            .no-print { display: none !important; }
+            .screen { display: block !important; }
+            .folha-rosto { height: 98vh; text-align: center; display: flex !important; flex-direction: column; justify-content: center; page-break-after: always; }
+            .card { border: none; box-shadow: none; }
         }
-      }
-    }
-    return true;
-  },
+    </style>
+</head>
+<body>
 
-  salvarRascunho() {
-    const draft = { meta: CURRENT_DRAFT_META, respostas: Form.getRespostas() };
-    const drafts = Utils.loadDrafts();
-    const idx = drafts.findIndex(d => d.meta.id === draft.meta.id);
-    if (idx >= 0) drafts[idx] = draft; else drafts.push(draft);
-    Utils.saveDrafts(drafts);
-    Utils.toast('Rascunho salvo localmente');
-  },
+<header class="no-print">SISTEMA 5S J2M - v1.2025</header>
 
-  finalizar() {
-    const respostas = Form.getRespostas();
-    if (!Form.validarRespostas(respostas)) return;
+<div class="container">
+    <div id="scr_home" class="screen active">
+        <div class="card">
+            <h3>Página Inicial</h3>
+            <label>Setor:</label>
+            <select id="setor">
+                <option value="">-- SELECIONE --</option>
+                <option value="ADM FILIAL">ADM FILIAL</option>
+                <option value="ALMOXARIFADO">ALMOXARIFADO</option>
+                <option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
+                <option value="ESPAÇO MAKER">ESPAÇO MAKER</option>
+                <option value="ESTOQUE">ESTOQUE</option>
+                <option value="INJEÇÃO">INJEÇÃO</option>
+                <option value="MANUTENÇÃO">MANUTENÇÃO</option>
+                <option value="MATRIZARIA">MATRIZARIA</option>
+                <option value="MONTAGEM">MONTAGEM</option>
+                <option value="PPCP">PPCP</option>
+                <option value="QUALIDADE">QUALIDADE</option>
+                <option value="RECEBIMENTO">RECEBIMENTO</option>
+            </select>
+            <label>Responsável:</label><input type="text" id="resp">
+            <label>Auditor:</label><input type="text" id="aud">
+            <label>Data:</label><input type="date" id="dt">
+            
+            <button class="btn-p" onclick="iniciarAudit()">INICIAR FORMULÁRIO</button>
+            <button class="btn-s" onclick="abrirDash()">DASHBOARD</button>
+            <button class="btn-sync" onclick="sincronizarAuto()">🔄 SINCRONIZAR AGORA</button>
+        </div>
+    </div>
 
-    // Médias por senso + nota total
-    const soma = { Seleção:0, Ordenação:0, Limpeza:0, Padronização:0, Autodisciplina:0 };
-    const cnt  = { Seleção:0, Ordenação:0, Limpeza:0, Padronização:0, Autodisciplina:0 };
-    QUESTOES_5S.forEach(q => { const n = Number(respostas[q.id].nota || 0); soma[q.senso]+=n; cnt[q.senso]+=1; });
-    const medias = {}; Object.keys(soma).forEach(s => medias[s] = Utils.round2(soma[s] / Math.max(1, cnt[s])));
-    const notaTotal = Utils.round2((medias['Seleção'] + medias['Ordenação'] + medias['Limpeza'] + medias['Padronização'] + medias['Autodisciplina']) / 5);
+    <div id="scr_form" class="screen"><div id="form_content"></div></div>
 
-    // Grava localmente
-    const subs = Utils.loadSubmissions();
-    const isEdit = !!(CURRENT_DRAFT_META && CURRENT_DRAFT_META.editId);
-    const id = isEdit ? CURRENT_DRAFT_META.editId : ('R' + Date.now());
-    const d = new Date(CURRENT_DRAFT_META.dataISO);
-    const rec = {
-      id,
-      meta: { ...CURRENT_DRAFT_META },
-      respostas,
-      calculos: { medias, notaTotal },
-      Ano: d.getFullYear(),
-      Mes: d.getMonth() + 1
+    <div id="scr_dash" class="screen">
+        <div class="no-print card" id="filtros_dash"></div>
+        <div id="relatorio_print"></div>
+        <div class="no-print">
+            <button class="btn-p" onclick="window.print()">GERAR PDF</button>
+            <button class="btn-s" onclick="location.reload()">VOLTAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const WEB_APP_URL = "SUA_URL_AQUI"; // SUBSTITUA PELA SUA URL DO GOOGLE APPS SCRIPT
+
+const perguntas5S = [
+    { s: "1 - SELEÇÃO", q: ["Ferramentas e equipamentos são necessários para o trabalho?","Existem itens duplicados sobre a bancada?","Ferramentas acondicionadas corretamente?","Gestão à vista e documentos estão atualizados?","Avisos e quadros atuais são necessários?"]},
+    { s: "2 - ORDENAÇÃO", q: ["Locais de paletes e caixas estão marcados?","Linhas e marcações são claramente visíveis?","Prateleiras e caixas estão identificadas?","Ferramentas retornam ao lugar após uso?","Arquivos e documentos fáceis de encontrar?"]},
+    { s: "3 - LIMPEZA", q: ["Piso, corredores e escadas estão limpos?","Máquinas e equipamentos sem vazamentos?","Lixeiras identificadas e limpas?","Iluminação, janelas e paredes limpas?","Fontes de sujeira foram eliminadas?"]},
+    { s: "4 - PADRONIZAÇÃO", q: ["Funcionários usam EPIs corretamente?","Extintores e emergência desobstruídos?","Quadros organizados sem papéis obsoletos?","Padrão de cores e etiquetas respeitado?","Placas de segurança em bom estado?"]},
+    { s: "5 - AUTODISCIPLINA", q: ["Gestão mantém os padrões de 5S?","Checklist de autoavaliação é realizado?","Missão, visão e política conhecidos?","Melhorias implementadas desde a última?","Ambientes comuns limpos e organizados?","Ações corretivas anteriores atendidas?"]}
+];
+
+let db = JSON.parse(localStorage.getItem("db_j2m_5s") || "[]");
+let tempAudit = {};
+let etapa = 0;
+
+function iniciarAudit() {
+    const s = document.getElementById('setor').value;
+    if(!s) return alert("Selecione um setor!");
+    tempAudit = {
+        id: Date.now(),
+        setor: s,
+        responsavel: document.getElementById('resp').value,
+        auditor: document.getElementById('aud').value,
+        data: document.getElementById('dt').value,
+        respostas: []
     };
+    etapa = 0;
+    renderEtapa();
+}
 
-    if (isEdit) {
-      const i = subs.findIndex(x => x.id === id);
-      if (i >= 0) subs[i] = rec; else subs.push(rec);
-    } else {
-      subs.push(rec);
-    }
-    Utils.saveSubmissions(subs);
-
-    // remove rascunho
-    const drafts = Utils.loadDrafts().filter(d => d.meta.id !== CURRENT_DRAFT_META.id);
-    Utils.saveDrafts(drafts);
-
-    Utils.toast('Registro salvo.');
-    location.hash = '#dash';
-    Dash.atualizar();
-  }
-};
-
-// ================== DASHBOARD ==================
-const Dash = {
-  atualizar() {
-    const filtro = {
-      setor: Utils.byId('filtroSetor').value || '',
-      mes: Utils.byId('filtroMes').value || '',
-      ano: Utils.byId('filtroAno').value || ''
-    };
-    const registros = Dash.filtrarRegistros(filtro);
-    Dash.renderBarras(registros);
-    Dash.renderRadar(registros, filtro.setor);
-    Dash.listarRegistros(registros);
-    Dash.listarAcoes(registros);
-  },
-
-  filtrarRegistros(f) {
-    const subs = Utils.loadSubmissions();
-    return subs.filter(r => {
-      if (f.setor && r.meta.setor !== f.setor) return false;
-      if (f.ano && Number(r.Ano) !== Number(f.ano)) return false;
-      if (f.mes && Number(r.Mes) !== Number(f.mes)) return false;
-      return true;
+function renderEtapa() {
+    const senso = perguntas5S[etapa];
+    let html = `<div class="card"><h2>${senso.s}</h2>`;
+    senso.q.forEach((q, i) => {
+        html += `<div class="q-row"><span class="q-text">${i+1}. ${q}</span>
+            <select class="nota-box" id="n_${i}">
+                <option value="10">10</option><option value="8">8</option>
+                <option value="6">6</option><option value="4">4</option><option value="2">2</option>
+            </select></div>`;
     });
-  },
+    html += `<label>Plano de Ação Corretiva (Obrigatório se nota < 6):</label>
+             <textarea id="p_acao" rows="3"></textarea>
+             <button class="btn-p" onclick="salvarEtapa()">PRÓXIMO</button>
+             ${etapa > 0 ? `<button class="btn-s" onclick="etapa--; renderEtapa()">VOLTAR</button>` : ''}</div>`;
+    document.getElementById('form_content').innerHTML = html;
+    showScreen('scr_form');
+}
 
-  renderBarras(registros) {
-    const ctx = Utils.byId('chartBarras').getContext('2d');
-    if (barrasChart) barrasChart.destroy();
-
-    // média por setor
-    const map = {};
-    registros.forEach(r => { (map[r.meta.setor] ||= []).push(r.calculos.notaTotal); });
-    const barras = Object.keys(map).map(s => ({
-      setor: s,
-      nota: Utils.round2(map[s].reduce((a,b)=>a+b,0)/map[s].length)
-    })).sort((a,b)=> b.nota - a.nota);
-
-    barrasChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: barras.map(b => b.setor),
-        datasets: [{
-          label: 'Nota média por Setor',
-          data: barras.map(b => b.nota),
-          backgroundColor: 'rgba(33, 150, 243, 0.6)'
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true, suggestedMax: 10 } }
-      }
-    });
-  },
-
-  renderRadar(registros, setorSel) {
-    const ctx = Utils.byId('chartRadar').getContext('2d');
-    if (radarChart) radarChart.destroy();
-
-    // média geral por senso
-    const somaG = { Seleção:0, Ordenação:0, Limpeza:0, Padronização:0, Autodisciplina:0 };
-    let countG = 0;
-    registros.forEach(r => { Object.keys(somaG).forEach(k => somaG[k] += Number(r.calculos.medias[k] || 0)); countG++; });
-    const geral = countG ? Object.keys(somaG).map(k => Utils.round2(somaG[k]/countG)) : [];
-
-    // média do setor selecionado (se houver filtro)
-    let setor = [];
-    if (setorSel) {
-      const rSetor = registros.filter(r => r.meta.setor === setorSel);
-      if (rSetor.length) {
-        const s = { Seleção:0, Ordenação:0, Limpeza:0, Padronização:0, Autodisciplina:0 };
-        rSetor.forEach(r => Object.keys(s).forEach(k => s[k]+=Number(r.calculos.medias[k]||0)));
-        setor = Object.keys(s).map(k => Utils.round2(s[k]/rSetor.length));
-      }
+function salvarEtapa() {
+    const notas = [];
+    let soma = 0;
+    const qCount = perguntas5S[etapa].q.length;
+    for(let i=0; i<qCount; i++) {
+        const v = parseInt(document.getElementById(`n_${i}`).value);
+        notas.push(v);
+        soma += v;
     }
+    const plano = document.getElementById('p_acao').value;
+    if(notas.some(n => n < 6) && plano.length < 5) return alert("Plano de ação obrigatório para notas baixas!");
+    
+    tempAudit.respostas[etapa] = { notas, plano, media: (soma/qCount).toFixed(1) };
+    
+    if(etapa < 4) { etapa++; renderEtapa(); } 
+    else { db.push(tempAudit); localStorage.setItem("db_j2m_5s", JSON.stringify(db)); location.reload(); }
+}
 
-    const desejada = [MEDIA_DESEJADA,MEDIA_DESEJADA,MEDIA_DESEJADA,MEDIA_DESEJADA,MEDIA_DESEJADA];
-    const labels = ['Seleção','Ordenação','Limpeza','Padronização','Autodisciplina'];
+async function sincronizarAuto() {
+    const btn = document.querySelector('.btn-sync');
+    btn.innerText = "⏳ SINCRONIZANDO...";
+    try {
+        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(db) });
+        alert("✅ Sincronização automática enviada!");
+    } catch (e) { alert("Erro de conexão."); }
+    btn.innerText = "🔄 SINCRONIZAR AGORA";
+}
 
+function abrirDash() {
+    const fs = document.getElementById('filtros_dash');
+    fs.innerHTML = `<select id="f_setor" onchange="renderDash()"><option value="ALL">TODOS OS SETORES</option>` + 
+                   [...new Set(db.map(d=>d.setor))].map(s=>`<option value="${s}">${s}</option>`).join('') + `</select>`;
+    renderDash();
+    showScreen('scr_dash');
+}
+
+function renderDash() {
+    const sel = document.getElementById('f_setor').value;
+    const filtrados = db.filter(d => sel === "ALL" || d.setor === sel);
+    if(!filtrados.length) return;
+    const a = filtrados[filtrados.length-1];
+    const nFinal = (a.respostas.reduce((acc, r) => acc + parseFloat(r.media), 0) / 5).toFixed(1);
+
+    document.getElementById('relatorio_print').innerHTML = `
+        <div class="folha-rosto">
+            <h1 style="color:var(--primary); font-size:50px;">RELATÓRIO 5S</h1>
+            <h2 style="font-size:30px;">${a.setor}</h2>
+            <div style="font-size:120px; font-weight:bold; color:var(--primary); margin:20px 0;">${nFinal}</div>
+            <p>Data: ${a.data} | Auditor: ${a.auditor}</p>
+        </div>
+        <div class="chart-container">
+            <div class="chart-box"><canvas id="cRadar"></canvas></div>
+            <div class="chart-box"><canvas id="cBarra"></canvas></div>
+        </div>
+        <div class="card"><h3>Planos de Ação</h3>${a.respostas.map((r,i)=>`<p><b>Senso ${i+1}:</b> ${r.plano || 'N/A'}</p>`).join('')}</div>`;
+    
+    renderCharts(a, nFinal);
+}
+
+function renderCharts(a, nFinal) {
+    new Chart(document.getElementById('cRadar'), {
+        type: 'radar',
+        data: {
+            labels: ['Seleção', 'Ordenação', 'Limpeza', 'Padronização', 'Disciplina'],
+            datasets: [{ label: 'Setor', data: a.respostas.map(r=>r.media), borderColor: '#f06639', fill: true }]
+        },
+        options: { maintainAspectRatio: false, scales: { r: { min: 0, max: 10 } } }
+    });
+    new Chart(document.getElementById('cBarra'), {
+        type: 'bar',
+        data: {
+            labels: [a.setor, 'Meta'],
+            datasets: [{ data: [nFinal, 8], backgroundColor: ['#f06639', '#28a745'] }]
+        },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } }
+    });
+}
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+</script>
+</body>
+</html>
