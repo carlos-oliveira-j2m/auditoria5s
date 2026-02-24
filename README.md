@@ -1,68 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Auditoria 5S J2M - v1.2025 Enterprise</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-<style>
-:root { --primary: #f06639; --secondary: #5d5a51; --green: #28a745; --blue: #007bff; }
-*{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
-
-/* Plano de Fundo Dinâmico */
-body { 
-    margin:0; 
-    min-height: 100vh;
-    background-color: #f0f2f5;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    transition: background-image 1.5s ease-in-out;
-    position: relative;
-}
-
-/* Overlay para garantir leitura */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.85); /* Clareia a imagem de fundo */
-    z-index: -1;
-}
-
-header { background: var(--secondary); padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); color: white; font-weight: bold; font-size: 22px; position: relative; }
-
-.screen { display:none; padding:20px; max-width: 1150px; margin: 10px auto; position: relative; }
-.active { display:block; animation: fadeIn 0.4s; }
-
-.filter-bar { display: flex; gap: 10px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.filter-item { flex: 1; min-width: 140px; }
-.filter-item label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; color: var(--secondary); }
-
-.kpi-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-.kpi-card { background: var(--secondary); color: white; padding: 20px; border-radius: 8px; flex: 1; min-width: 200px; text-align: center; border-bottom: 5px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.kpi-card h2 { margin: 0; font-size: 32px; color: var(--primary); }
-
-.card { background: rgba(255,255,255,0.95); padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-
-button { border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; transition: 0.2s; }
-.btn-primary { background: var(--primary); }
-.btn-primary:hover { opacity: 0.9; }
-.btn-secondary { background: var(--secondary); }
-.btn-danger { background: #dc3545; font-size: 10px; padding: 5px 10px; }
-.btn-edit { background: #ffc107; color: #000; font-size: 10px; padding: 5px 10px; margin-right: 5px; }
-
-select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; background: white; }
-
-.tabela-pdf { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-.tabela-pdf th, .tabela-pdf td { border: 1px solid #999; padding: 8px; text-align: left; font-size: 13px; }
-.tabela-pdf th { background: #eee; }
-
-@media print { .no-print { display:none !important; } body::before { background: white; } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
+    <meta charset="UTF-8">
+    <title>Auditoria 5S J2M - v1.2025 Enterprise</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root { --primary: #f06639; --secondary: #5d5a51; --green: #28a745; --blue: #007bff; }
+        *{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
+        body { margin:0; min-height: 100vh; background-color: #f0f2f5; background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 1.5s ease-in-out; position: relative; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: -1; }
+        header { background: var(--secondary); padding: 15px; text-align: center; border-bottom: 5px solid var(--primary); color: white; font-weight: bold; font-size: 22px; }
+        .screen { display:none; padding:20px; max-width: 1150px; margin: 10px auto; }
+        .active { display:block; animation: fadeIn 0.4s; }
+        .card { background: rgba(255,255,255,0.95); padding: 20px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .q-row { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .q-text { font-weight: bold; display: block; margin-bottom: 5px; color: #444; }
+        .obs-input { font-size: 12px; background: #fff9f7; margin-top: 5px; border: 1px solid #f0663944; }
+        button { border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; color: white; transition: 0.2s; margin-top: 5px; }
+        .btn-primary { background: var(--primary); width: 100%; }
+        .btn-sync { background: var(--blue); width: 100%; margin-top: 10px; }
+        select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 5px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
 </head>
 <body id="bgBody">
 
@@ -70,196 +31,126 @@ select, input, textarea { width: 100%; padding: 10px; border-radius: 4px; border
 
 <div id="home" class="screen active">
     <div class="card">
-        <h3 id="tituloHome">Identificação da Auditoria</h3>
+        <h3>Identificação da Auditoria</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div><label>Setor:</label><input type="text" id="setor" placeholder="Ex: Matrizaria"></div>
+            <div><label>Setor:</label>
+                <select id="setor">
+                    <option value="">-- SELECIONE --</option>
+                    <option value="ADM Filial">ADM Filial</option>
+                    <option value="ALMOXARIFADO/ESTOQUE">ALMOXARIFADO/ESTOQUE</option>
+                    <option value="CONFORMAÇÃO">CONFORMAÇÃO</option>
+                    <option value="INJEÇÃO">INJEÇÃO</option>
+                    <option value="MATRIZARIA">MATRIZARIA</option>
+                    <option value="MONTAGEM">MONTAGEM</option>
+                    <option value="PPCP">PPCP</option>
+                    <option value="QUALIDADE">QUALIDADE</option>
+                    <option value="SALA DE ELETRONICOS">SALA DE ELETRONICOS</option>
+                </select>
+            </div>
             <div><label>Auditor:</label><input type="text" id="auditor"></div>
             <div><label>Responsável:</label><input type="text" id="responsavel"></div>
             <div><label>Data:</label><input type="date" id="data"></div>
         </div><br>
         <button class="btn-primary" onclick="start()">Iniciar Avaliação</button>
-        <button class="btn-secondary" onclick="openDashboard()">Dashboard / Histórico</button>
+        <button class="btn-sync" onclick="sincronizar()">🔄 Sincronização Automática</button>
     </div>
-</div>
-
-<div id="dashboard" class="screen">
-    <div class="no-print">
-        <div class="filter-bar">
-            <div class="filter-item"><label>SETOR</label><select id="fSetor" onchange="renderRelatorio()"></select></div>
-            <div class="filter-item"><label>MÊS</label>
-                <select id="fMes" onchange="renderRelatorio()">
-                    <option value="GERAL">Todos</option>
-                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
-                    <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
-                    <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
-                    <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
-                </select>
-            </div>
-            <div class="filter-item"><label>ANO</label>
-                <select id="fAno" onchange="renderRelatorio()"><option value="2026">2026</option><option value="2025">2025</option></select>
-            </div>
-            <div style="display:flex; align-items:flex-end; gap:5px;">
-                <button class="btn-secondary" onclick="resetForm()">Novo</button>
-                <button style="background:#10b981" onclick="window.print()">Salvar PDF</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="kpi-container">
-        <div class="kpi-card"><h2 id="mediaGeralFabrica">0.0</h2><p>Média Geral Fábrica</p></div>
-        <div class="kpi-card"><h2 id="totalAuditorias">0</h2><p>Total de Auditorias</p></div>
-    </div>
-
-    <div id="areaGraficos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 40px;">
-        <div style="background:white; padding:10px; border-radius:8px;"><canvas id="cRadar"></canvas></div>
-        <div style="background:white; padding:10px; border-radius:8px;"><canvas id="cBarra"></canvas></div>
-    </div>
-
-    <div id="relatorioView"></div>
 </div>
 
 <div id="senso" class="screen"></div>
 
 <script>
-Chart.register(ChartDataLabels);
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYTDUTtW_tA8PgDQ3L5j6NFKlC2soH722nR_7lk_Kazuus8kMwn4-SLk9pG9ANwZ0/exec";
 
-// --- Lógica do Fundo Dinâmico ---
-const imagensFundo = [
-    "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=1920", // Metalúrgica/Usinagem
-    "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1920", // Corte Laser/Solda
-    "https://images.unsplash.com/photo-1565608438257-fac3c27beb36?auto=format&fit=crop&q=80&w=1920", // Injeção Plástica
-    "https://images.unsplash.com/photo-1592982537447-6f2a6a0c3c8b?auto=format&fit=crop&q=80&w=1920"  // Eletrônicos Agro
+const perguntas = [
+    { s: "1- Seleção", q: ["Todas as ferramentas e equipamentos são necessários para o trabalho?","Existem itens duplicados sobre a bancada?","Ferramentas acondicionadas corretamente?","Quadros de gestão e documentos atualizados?","Os avisos e quadros informativos são necessários?"]},
+    { s: "2- Ordenação", q: ["Os locais para paletes e caixas estão marcados?","As linhas e marcações estão claramente visíveis?","Prateleiras e locais de armazenamento identificados?","As gavetas e armários estão identificados?","Ferramentas ordenadas por frequência de uso?"]},
+    { s: "3- Limpeza", q: ["O chão está limpo e livre de detritos?","As máquinas e equipamentos estão conservados?","As fontes de sujeira foram identificadas e tratadas?","Materiais de limpeza estão disponíveis?","As lixeiras estão identificadas e limpas?"]},
+    { s: "4- Padronização", q: ["Funcionários usam uniformes e EPIs corretamente?","Placas de segurança e extintores em bom estado?","A iluminação e ventilação estão adequadas?","Painéis elétricos estão fechados e identificados?","Ambientes de uso comum estão organizados?"]},
+    { s: "5- Autodisciplina", q: ["A gestão mantém os padrões?","Checklist de autoavaliação é realizado?","Missão, visão e valores são conhecidos?","EPI's são usados constantemente como hábito?","Existe padrão de limpeza em gestão à vista?","Ações da Auditoria Anterior foram atendidas?"]}
 ];
-let imgIndex = 0;
-function mudarFundo() {
-    document.getElementById('bgBody').style.backgroundImage = `url('${imagensFundo[imgIndex]}')`;
-    imgIndex = (imgIndex + 1) % imagensFundo.length;
-}
-setInterval(mudarFundo, 10000);
-mudarFundo();
 
-// --- Lógica da Auditoria (V1 Reforçada) ---
 let db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-let audit = {}, sensoIndex = 0, editandoId = null;
-let chartRadar, chartBar;
-
-function resetForm() {
-    editandoId = null;
-    document.getElementById('tituloHome').innerText = "Identificação da Auditoria";
-    document.getElementById('setor').value = "";
-    show('home');
-}
+let audit = {}, sensoIndex = 0;
 
 function start() {
-    if(!document.getElementById('setor').value) return alert("Informe o Setor");
-    if(!editandoId) {
-        audit = { 
-            id: Date.now(), 
-            setor: document.getElementById('setor').value, 
-            auditor: document.getElementById('auditor').value, 
-            responsavel: document.getElementById('responsavel').value, 
-            data: document.getElementById('data').value, 
-            respostas: [] 
-        };
+    if(!document.getElementById('setor').value || !document.getElementById('data').value) return alert("Preencha Setor e Data!");
+    audit = { 
+        id: Date.now(), 
+        setor: document.getElementById('setor').value, 
+        auditor: document.getElementById('auditor').value, 
+        responsavel: document.getElementById('responsavel').value, 
+        data: document.getElementById('data').value, 
+        respostas: [] 
+    };
+    sensoIndex = 0; 
+    renderSenso();
+}
+
+function renderSenso() {
+    const s = perguntas[sensoIndex];
+    let html = `<div class="card"><h2>${s.s}</h2>`;
+    s.q.forEach((pergunta, i) => {
+        html += `<div class="q-row">
+            <span class="q-text">${pergunta}</span>
+            <select id="n_${i}">
+                <option value="">-- NOTA --</option>
+                <option value="10">10 - Excelente</option>
+                <option value="6">6 - Regular/Parcial</option>
+                <option value="2">2 - Crítico</option>
+            </select>
+            <input type="text" id="obs_${i}" class="obs-input" placeholder="Evidência/Observação (Ex: Itens em excesso)">
+        </div>`;
+    });
+    html += `<h3>Ação Corretiva do Senso</h3>
+             <textarea id="acao_txt" placeholder="Descreva a ação obrigatória..."></textarea>
+             <button class="btn-primary" onclick="salvarSenso()">Próximo / Finalizar</button></div>`;
+    
+    document.getElementById('senso').innerHTML = html;
+    show('senso');
+}
+
+function salvarSenso() {
+    const notas = [];
+    for(let i=0; i<perguntas[sensoIndex].q.length; i++) {
+        const n = document.getElementById(`n_${i}`).value;
+        const o = document.getElementById(`obs_${i}`).value;
+        if(!n) return alert("Responda todas as perguntas!");
+        if(n < 10 && !o) return alert("Notas menores que 10 exigem uma observação/evidência!");
+        notas.push({ nota: Number(n), obs: o });
     }
-    sensoIndex = 0; renderSenso();
-}
+    const acao = document.getElementById('acao_txt').value;
+    if(!acao) return alert("O Plano de Ação para o senso é obrigatório!");
 
-// [Funções renderSenso, salvarSenso, renderRelatorio e atualizarGraficos mantidas da V1 com suporte a Radar Comparativo]
+    audit.respostas.push({ senso: perguntas[sensoIndex].s, notas, acao, media: (notas.reduce((a,b)=>a+b.nota,0)/notas.length).toFixed(1) });
 
-function openDashboard() {
-    db = JSON.parse(localStorage.getItem("j2m_db") || "[]");
-    const sel = document.getElementById("fSetor");
-    sel.innerHTML = '<option value="GERAL">Visão Geral (Fábrica)</option>';
-    [...new Set(db.map(a => a.setor))].sort().forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
-    renderRelatorio();
-    show("dashboard");
-}
-
-function renderRelatorio() {
-    const fS = document.getElementById("fSetor").value;
-    const fM = document.getElementById("fMes").value;
-    const fA = document.getElementById("fAno").value;
-
-    const filtrados = db.filter(a => {
-        const d = new Date(a.data + "T00:00:00");
-        return (fS === "GERAL" || a.setor === fS) && (fM === "GERAL" || d.getMonth() == fM) && (fA === "GERAL" || d.getFullYear() == fA);
-    });
-
-    let somaTotal = 0;
-    filtrados.forEach(a => somaTotal += a.respostas.reduce((acc, r) => acc + Number(r.media), 0) / 5);
-    document.getElementById("mediaGeralFabrica").innerText = filtrados.length > 0 ? (somaTotal / filtrados.length).toFixed(1) : "0.0";
-    document.getElementById("totalAuditorias").innerText = filtrados.length;
-
-    let html = "<h3>Histórico de Auditorias</h3><table class='tabela-pdf'><tr><th>Data</th><th>Setor</th><th>Nota</th><th class='no-print'>Ações</th></tr>";
-    filtrados.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(a => {
-        const notaF = (a.respostas.reduce((acc,r)=>acc+Number(r.media),0)/5).toFixed(1);
-        html += `<tr><td>${a.data}</td><td>${a.setor}</td><td><b>${notaF}</b></td>
-        <td class='no-print'>
-            <button class='btn-edit' onclick='prepararEdicao(${a.id})'>Editar</button>
-            <button class='btn-danger' onclick='excluirAuditoria(${a.id})'>Excluir</button>
-        </td></tr>`;
-    });
-    html += "</table>";
-    document.getElementById("relatorioView").innerHTML = html;
-    atualizarGraficos(filtrados);
-}
-
-function atualizarGraficos(dados) {
-    if(chartRadar) chartRadar.destroy(); if(chartBar) chartBar.destroy();
-    if(dados.length === 0) return;
-
-    const mSensos = [0,1,2,3,4].map(i => (dados.reduce((acc, a) => acc + Number(a.respostas[i].media), 0) / dados.length).toFixed(1));
-    const mGeral = [0,1,2,3,4].map(i => (db.reduce((acc, a) => acc + Number(a.respostas[i].media), 0) / db.length).toFixed(1));
-
-    chartRadar = new Chart(document.getElementById('cRadar'), {
-        type: 'radar',
-        data: {
-            labels: ["Seleção", "Ordenação", "Limpeza", "Padronização", "Disciplina"],
-            datasets: [
-                { label: 'Filtro Atual', data: mSensos, backgroundColor: 'rgba(240,102,57,0.2)', borderColor: '#f06639', pointRadius: 4 },
-                { label: 'Média Fábrica (Histórica)', data: mGeral, borderColor: '#007bff', borderDash: [5,5], fill: false },
-                { label: 'Meta (8.0)', data: [8,8,8,8,8], borderColor: '#28a745', borderDash: [2,2], fill: false, pointRadius: 0 }
-            ]
-        },
-        options: { scales: { r: { min: 0, max: 10 } } }
-    });
-
-    const setores = [...new Set(dados.map(d=>d.setor))];
-    const notas = setores.map(s => {
-        const d = dados.filter(x=>x.setor===s);
-        return (d.reduce((acc, a) => acc + (a.respostas.reduce((x,y)=>x+Number(y.media),0)/5), 0) / d.length).toFixed(1);
-    });
-
-    chartBar = new Chart(document.getElementById('cBarra'), {
-        type: 'bar',
-        data: { labels: setores, datasets: [{ label: 'Nota Final', data: notas, backgroundColor: '#5d5a51' }] },
-        options: { scales: { y: { min: 0, max: 10 } }, plugins: { datalabels: { display: true, anchor: 'end', align: 'top' } } }
-    });
-}
-
-function excluirAuditoria(id) {
-    if(confirm("Deseja excluir permanentemente esta auditoria?")) {
-        db = db.filter(a => a.id !== id);
+    if(sensoIndex < 4) {
+        sensoIndex++;
+        renderSenso();
+    } else {
+        db.push(audit);
         localStorage.setItem("j2m_db", JSON.stringify(db));
-        renderRelatorio();
+        alert("Auditoria salva localmente!");
+        location.reload();
     }
 }
 
-function prepararEdicao(id) {
-    const a = db.find(x => x.id === id);
-    if(a) {
-        editandoId = id; audit = JSON.parse(JSON.stringify(a));
-        document.getElementById('setor').value = a.setor;
-        document.getElementById('auditor').value = a.auditor;
-        document.getElementById('responsavel').value = a.responsavel;
-        document.getElementById('data').value = a.data;
-        show('home');
-        document.getElementById('tituloHome').innerText = "Editando Auditoria";
+async function sincronizar() {
+    const btn = event.target;
+    btn.innerText = "⏳ ENVIANDO PARA PLANILHA...";
+    try {
+        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(db) });
+        alert("✅ Sincronização automática concluída!");
+    } catch (e) {
+        alert("Erro na conexão. Verifique a internet.");
+    } finally {
+        btn.innerText = "🔄 Sincronização Automática";
     }
 }
 
-function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+function show(id) { 
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
+    document.getElementById(id).classList.add("active"); 
+}
 </script>
 </body>
 </html>
