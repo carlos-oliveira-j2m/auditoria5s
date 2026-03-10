@@ -212,10 +212,10 @@ function renderSenso() {
             <span class="pergunta-ajuda">${item.d}</span>
             <select id="q${i}">
                 <option value="10" ${notaS==10?'selected':''}>10 - Excelente - Sem evidências</option>
-                <option value="8" ${notaS==8?'selected':''}>8 - Bom</option>
-                <option value="6" ${notaS==6?'selected':''}>6 - Regular</option>
-                <option value="4" ${notaS==4?'selected':''}>4 - Ruim</option>
-                <option value="2" ${notaS==2?'selected':''}>2 - Crítico</option>
+                <option value="8" ${notaS==8?'selected':''}>8 - Bom - 1 evidência</option>
+                <option value="6" ${notaS==6?'selected':''}>6 - Regular - 2 evidências</option>
+                <option value="4" ${notaS==4?'selected':''}>4 - Ruim - 3 evidências</option>
+                <option value="2" ${notaS==2?'selected':''}>2 - Crítico - 4 ou + evidências</option>
             </select>
             <textarea id="obs${i}" placeholder="Descreva a evidência ou observação...">${obsS}</textarea>
         </div>`;
