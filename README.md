@@ -211,7 +211,7 @@ function renderSenso() {
             <span class="pergunta-texto">${i+1}. ${item.p}</span>
             <span class="pergunta-ajuda">${item.d}</span>
             <select id="q${i}">
-                <option value="10" ${notaS==10?'selected':''}>10 - Excelente</option>
+                <option value="10" ${notaS==10?'selected':''}>10 - Excelente - Sem evidências</option>
                 <option value="8" ${notaS==8?'selected':''}>8 - Bom</option>
                 <option value="6" ${notaS==6?'selected':''}>6 - Regular</option>
                 <option value="4" ${notaS==4?'selected':''}>4 - Ruim</option>
